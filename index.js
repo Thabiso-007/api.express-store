@@ -28,10 +28,13 @@ const app = express()
 // Db Connection
 dbConnection()
 
+
+
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({  extended: true}))
+
 app.use(cookParser()) 
 app.use(cors());
 app.use(morgan('tiny'))

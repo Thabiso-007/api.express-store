@@ -28,10 +28,10 @@ const {
 } = require('../../controllers/user-controller/userController')
 const { authMiddleWare, isAdmin } = require('../../middleware/authMiddleware')
 
+router.post('/cart', authMiddleWare, userCart)
 router.post('/register', register)
 router.post('/login', login)
 router.post('/admin-login', Adminlogin)
-router.post('/cart', userCart)
 router.post('/forgot-password-token', forgotPasswordToken)
 router.post('/cart/apply-coupon', authMiddleWare, applyCoupon)
 router.post('/cart/cash-order', authMiddleWare, createOrder)
