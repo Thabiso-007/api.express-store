@@ -362,6 +362,37 @@ exports.getUserCart = asyncHandler(
     }
 )
 
+
+// Delete single product 
+exports.deleteProductFromCart = asyncHandler(
+    async (req, res) => {
+        const { _id } = req.user
+        const { cartItemId } = req.params
+        try {
+            const removeProductFromCart = await Cart.deleteOne({ userId: _id, _id: cartItemId })
+            res.status(200).json(removeProductFromCart)
+        } catch (error) {
+            res.status(500).json({ message: error.message })
+        }
+    }
+)
+
+// Update product quantity from cart
+exports.updateProductQuantityFromCart = asyncHandler(
+    async (req, res) => {
+        const { _id } = req.user
+        const { cartItemId, newQuantity } = req.params
+        try {
+            const cartItem = await Cart.findOneOne({ userId: _id, _id: cartItemId })
+            cartItem.quantity = newQuantity
+            cartItem.save()
+            res.status(200).json(cartItem)
+        } catch (error) {
+            res.status(500).json({ message: error.message })
+        }
+    }
+)
+
 // Empty cart
 exports.emptyCart = asyncHandler(
     async (req, res) => {

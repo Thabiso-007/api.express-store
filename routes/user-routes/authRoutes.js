@@ -24,7 +24,9 @@ const {
     applyCoupon,
     createOrder,
     getOrders,
-    updateOrderStatus
+    updateOrderStatus,
+    deleteProductFromCart,
+    updateProductQuantityFromCart
 } = require('../../controllers/user-controller/userController')
 const { authMiddleWare, isAdmin } = require('../../middleware/authMiddleware')
 
@@ -48,6 +50,8 @@ router.put('/order/update-order/:id', authMiddleWare, isAdmin, updateOrderStatus
 router.put('/reset-password/:token', resetPassword)
 
 router.delete('/empty-cart', authMiddleWare, emptyCart)
+router.delete('/delete-product-cart/:cartItemId', authMiddleWare, deleteProductFromCart)
+router.delete('/update-product-cart/:cartItemId/:newQuantity', authMiddleWare, updateProductQuantityFromCart)
 router.delete('/:id', deleteSingleUser)
 
 router.put('/save-address', authMiddleWare, saveAddress)
