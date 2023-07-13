@@ -20,11 +20,11 @@ const {
     saveAddress,
     userCart,
     getUserCart,
-    emptyCart,
-    applyCoupon,
+    // emptyCart,
+    // applyCoupon,
     createOrder,
-    getOrders,
-    updateOrderStatus,
+    // getOrders,
+    //updateOrderStatus,
     deleteProductFromCart,
     updateProductQuantityFromCart
 } = require('../../controllers/user-controller/userController')
@@ -35,21 +35,21 @@ router.post('/register', register)
 router.post('/login', login)
 router.post('/admin-login', Adminlogin)
 router.post('/forgot-password-token', forgotPasswordToken)
-router.post('/cart/apply-coupon', authMiddleWare, applyCoupon)
-router.post('/cart/cash-order', authMiddleWare, createOrder)
+// router.post('/cart/apply-coupon', authMiddleWare, applyCoupon)
+router.post('/cart/create-order', authMiddleWare, createOrder)
 
 router.get('/refresh', handleRefreshToken)
 router.get('/logout', logout)
 router.get('/all', getAllUsers)
 router.get('/cart', authMiddleWare, getUserCart)
 router.get('/wishlist', authMiddleWare, getWishList)
-router.get('/get-orders', authMiddleWare, getOrders)
+// router.get('/get-orders', authMiddleWare, getOrders)
 router.get('/:id' ,authMiddleWare, getSingleUser)
 
-router.put('/order/update-order/:id', authMiddleWare, isAdmin, updateOrderStatus)
+// router.put('/order/update-order/:id', authMiddleWare, isAdmin, updateOrderStatus)
 router.put('/reset-password/:token', resetPassword)
 
-router.delete('/empty-cart', authMiddleWare, emptyCart)
+// router.delete('/empty-cart', authMiddleWare, emptyCart)
 router.delete('/delete-product-cart/:cartItemId', authMiddleWare, deleteProductFromCart)
 router.delete('/update-product-cart/:cartItemId/:newQuantity', authMiddleWare, updateProductQuantityFromCart)
 router.delete('/:id', deleteSingleUser)
