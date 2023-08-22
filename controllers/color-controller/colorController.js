@@ -2,55 +2,74 @@ const asyncHandler = require("express-async-handler");
 
 const Color = require("../../models/color-model/colorModel");
 
-exports.createColor = asyncHandler(async (req, res) => {
-  try {
-    const newColor = await Color.create(req.body);
-    res.json(newColor);
-  } catch (error) {
-    throw new Error(error);
-  }
-});
-
-exports.updateColor = asyncHandler(async (req, res) => {
-  const { id } = req.params;
+const color = {
+  // Insert a color
+  createColor: asyncHandler(
+    async (req, res) => {
+      try {
+        const newColor = await Color.create(req.body);
+        res.json(newColor);
+      } catch (error) {
+        res.status(500).json({ message: error.message });
+      }
+    }
+  ),
   
-  try {
-    const updatedColor = await Color.findByIdAndUpdate(id, req.body, {
-      new: true,
-    });
-    res.json(updatedColor);
-  } catch (error) {
-    throw new Error(error);
-  }
-});
-
-exports.deleteColor = asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  // Update a color
+  updateColor: asyncHandler(
+    async (req, res) => {
+      const { id } = req.params;
+    
+      try {
+        const updatedColor = await Color.findByIdAndUpdate(id, req.body, {
+          new: true,
+        });
+        res.json(updatedColor)
+      } catch (error) {
+        res.status(500).json({ message: error.message });
+      }
+    }
+  ),
   
-  try {
-    const deletedColor = await Color.findByIdAndDelete(id);
-    res.json(deletedColor);
-  } catch (error) {
-    throw new Error(error);
-  }
-});
-
-exports.getColor = asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  // Delete a Color
+  deleteColor: asyncHandler(
+    async (req, res) => {
+      const { id } = req.params
+    
+      try {
+        const deletedColor = await Color.findByIdAndDelete(id);
+        res.json(deletedColor);
+      } catch (error) {
+        res.status(500).json({ message: error.message });
+      }
+    }
+  ),
   
-  try {
-    const getaColor = await Color.findById(id);
-    res.json(getaColor);
-  } catch (error) {
-    throw new Error(error);
-  }
-});
+  // Get a color
+  getColor: asyncHandler(
+    async (req, res) => {
+      const { id } = req.params;
+    
+      try {
+        const getaColor = await Color.findById(id);
+        res.json(getaColor);
+      } catch (error) {
+        res.status(500).json({ message: error.message });
+      }
+    }
+  ),
 
-exports.getallColor = asyncHandler(async (req, res) => {
-  try {
-    const getallColor = await Color.find();
-    res.json(getallColor);
-  } catch (error) {
-    throw new Error(error);
-  }
-});
+  // Get all colors
+  getallColor:  asyncHandler(
+    async (req, res) => {
+      try {
+        const getallColor = await Color.find();
+        res.json(getallColor);
+      } catch (error) {
+        res.status(500).json({ message: error.message });
+      }
+    }
+  )
+}
+
+module.exports = { color }

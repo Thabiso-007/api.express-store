@@ -1,22 +1,16 @@
-const express = require('express')
-const router = express.Router()
+const express = require('express');
+const router = express.Router();
 
-const { 
-    createBrand, 
-    updateBrand, 
-    deleteBrand, 
-    getBrand,
-    getAllBrand
-} = require('../../controllers/brand-controller/brandController')
-const { isAdmin, authMiddleWare  } = require('../../middleware/authMiddleware')
+const { brand } = require('../../controllers/brand-controller/brandController');
+const { isAdmin, authMiddleWare  } = require('../../middleware/authMiddleware');
 
-router.post('/create', isAdmin, authMiddleWare, createBrand)
+router.post('/create', isAdmin, authMiddleWare, brand.createBrand);
 
-router.get('/all', getAllBrand)
-router.get('/:id', getBrand)
+router.get('/all', brand.getAllBrand);
+router.get('/:id', brand.getBrand);
 
-router.delete('/:id', isAdmin, authMiddleWare, deleteBrand)
+router.delete('/:id', isAdmin, authMiddleWare, brand.deleteBrand);
 
-router.put('/:id', isAdmin, authMiddleWare, updateBrand)
+router.put('/:id', isAdmin, authMiddleWare, brand.updateBrand);
 
-module.exports = router
+module.exports = router;

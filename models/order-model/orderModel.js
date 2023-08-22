@@ -1,4 +1,4 @@
-const mongoose = require('mongoose') // Erase if already required
+const mongoose = require('mongoose'); // Erase if already required
 
 // Declare the Schema of the Mongo model
 var orderSchema = new mongoose.Schema({
@@ -85,8 +85,8 @@ var orderSchema = new mongoose.Schema({
         type: String,
         default: "Ordered"
     }
-}, { timestamps: true })
+}, { timestamps: true });
 
 //Export the model
-const Order = mongoose.model('Order', orderSchema)
-module.exports = Order
+const Order = mongoose.model('Order', orderSchema);
+module.exports = Order;
