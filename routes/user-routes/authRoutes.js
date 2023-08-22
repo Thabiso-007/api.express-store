@@ -1,63 +1,37 @@
-const express = require('express')
-const router = express.Router()
+const express = require('express');
+const router = express.Router();
 
-const { 
-    register,
-    login,
-    getAllUsers,
-    getSingleUser,
-    deleteSingleUser,
-    updateUser,
-    blockUser,
-    unblockUser,
-    handleRefreshToken,
-    logout,
-    updatePassword,
-    forgotPasswordToken,
-    resetPassword,
-    Adminlogin,
-    getWishList,
-    saveAddress,
-    userCart,
-    getUserCart,
-    // emptyCart,
-    // applyCoupon,
-    createOrder,
-    // getOrders,
-    //updateOrderStatus,
-    deleteProductFromCart,
-    updateProductQuantityFromCart
-} = require('../../controllers/user-controller/userController')
-const { authMiddleWare, isAdmin } = require('../../middleware/authMiddleware')
+const { user } = require('../../controllers/user-controller/userController');
+const { authMiddleWare, isAdmin } = require('../../middleware/authMiddleware');
 
-router.post('/cart', authMiddleWare, userCart)
-router.post('/register', register)
-router.post('/login', login)
-router.post('/admin-login', Adminlogin)
-router.post('/forgot-password-token', forgotPasswordToken)
-// router.post('/cart/apply-coupon', authMiddleWare, applyCoupon)
-router.post('/cart/create-order', authMiddleWare, createOrder)
+router.post('/cart', authMiddleWare, user.userCart);
+router.post('/register', user.register);
+router.post('/login', user.login);
+router.post('/admin-login', user.Adminlogin);
+router.post('/forgot-password-token', user.forgotPasswordToken);
+// router.post('/cart/apply-coupon', authMiddleWare, user.applyCoupon);
+router.post('/cart/create-order', authMiddleWare, user.createOrder);
 
-router.get('/refresh', handleRefreshToken)
-router.get('/logout', logout)
-router.get('/all', getAllUsers)
-router.get('/cart', authMiddleWare, getUserCart)
-router.get('/wishlist', authMiddleWare, getWishList)
-// router.get('/get-orders', authMiddleWare, getOrders)
-router.get('/:id' ,authMiddleWare, getSingleUser)
+router.get('/refresh', user.handleRefreshToken);
+router.get('/logout', user.logout);
+router.get('/all', user.getAllUsers);
+router.get('/cart', authMiddleWare, user.getUserCart);
+router.get('/wishlist', authMiddleWare, user.getWishList);
+// router.get('/get-orders', authMiddleWare, user.getOrders);
+router.get('/:id' ,authMiddleWare, user.getSingleUser);
 
-// router.put('/order/update-order/:id', authMiddleWare, isAdmin, updateOrderStatus)
-router.put('/reset-password/:token', resetPassword)
+// router.put('/order/update-order/:id', authMiddleWare, isAdmin, user.updateOrderStatus);
+router.put('/reset-password/:token', user.resetPassword);
 
-// router.delete('/empty-cart', authMiddleWare, emptyCart)
-router.delete('/delete-product-cart/:cartItemId', authMiddleWare, deleteProductFromCart)
-router.delete('/update-product-cart/:cartItemId/:newQuantity', authMiddleWare, updateProductQuantityFromCart)
-router.delete('/:id', deleteSingleUser)
+// router.delete('/empty-cart', authMiddleWare, emptyCart);
+router.delete('/delete-product-cart/:cartItemId', authMiddleWare, user.deleteProductFromCart);
+router.delete('/update-product-cart/:cartItemId/:newQuantity', authMiddleWare, user.updateProductQuantityFromCart);
+router.delete('/:id', user.deleteSingleUser);
 
-router.put('/save-address', authMiddleWare, saveAddress)
-router.put('/update-password', authMiddleWare, updatePassword)
-router.put('/update-user', authMiddleWare, updateUser)
-router.put('/blocked-user/:id', authMiddleWare, isAdmin, blockUser)
-router.put('/unblocked-user/:id', authMiddleWare, isAdmin, unblockUser)
+router.put('/save-address', authMiddleWare, user.saveAddress);
+router.put('/update-password', authMiddleWare, user.updatePassword);
+router.put('/update-user', authMiddleWare, user.updateUser);
+router.put('/blocked-user/:id', authMiddleWare, isAdmin, user.blockUser);
+router.put('/unblocked-user/:id', authMiddleWare, isAdmin, user.unblockUser);
 
-module.exports = router
+module.exports = router;

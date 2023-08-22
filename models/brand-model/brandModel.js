@@ -1,4 +1,4 @@
-const mongoose = require('mongoose') // Erase if already required
+const mongoose = require('mongoose'); // Erase if already required
 
 // Declare the Schema of the Mongo model
 const brandSchema = new mongoose.Schema({
@@ -11,5 +11,5 @@ const brandSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 //Export the model
-const Brand = mongoose.model('brand', brandSchema)
-module.exports = Brand
+const Brand = mongoose.model('brand', brandSchema);
+module.exports = Brand;

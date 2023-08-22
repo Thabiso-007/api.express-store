@@ -1,12 +1,12 @@
-const cloudinary = require('cloudinary')
+const cloudinary = require('cloudinary');
 
-const { cloud_name, cloud_api_key, cloud_api_secret } = require('../config/env/index')
+const { cloud_name, cloud_api_key, cloud_api_secret } = require('../config/env/index');
 
 cloudinary.config({
     cloud_name: cloud_name,
     api_key: cloud_api_key,
     api_secret: cloud_api_secret
-})
+});
 
 const cloudinaryUploads = async (fileToUpload) => {
     return new Promise((resolve) => {
@@ -20,8 +20,8 @@ const cloudinaryUploads = async (fileToUpload) => {
                     resource_type: "auto"
                 }
             )
-        })
-    })
+        });
+    });
 }
 
 module.exports = { cloudinaryUploads }
