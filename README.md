@@ -1,8 +1,8 @@
 ### Introduction
-An API for an E-commerce store. E-commerce (electronic commerce) is the buying and selling of goods and services, or the transmitting of funds or data, over an electronic network, primarily the internet. These business transactions occur either as business-to-business (B2B), business-to-consumer (B2C), consumer-to-consumer or consumer-to-business.
+An API (Application Programming Interface) for an E-commerce store plays a crucial role in enabling seamless integration between various systems and applications involved in the buying and selling of goods online. By providing a standardized method for communication and interaction, an E-commerce API simplifies the process of creating, managing, and updating product listings, inventory levels, order information, and payment processing. It allows developers to access essential functionalities of an E-commerce platform programmatically, facilitating the development of custom features and integrations tailored to specific business needs. Moreover, an E-commerce API ensures real-time synchronization of data across different channels, such as websites, mobile apps, and third-party integrations like marketplaces or social media platforms. With secure authentication mechanisms and well-documented endpoints, this robust interface empowers businesses to streamline their operations efficiently while enhancing customer experiences by offering a consistent flow of accurate information throughout the purchasing journey.
 
 ### Installation Guide
-* Clone this repository [here](https://github.com/Thabiso-Timzo/express-store-web.git).
+* Clone this repository [here](https://github.com/Thabiso-007/api.express-store.git).
 * The develop branch is the most stable branch at any given time, ensure you're working from it.
 * Run npm install to install all dependencies
 * You can either work with the default mLab database or use your locally installed MongoDB. Do configure to your choice in the application entry file.
@@ -10,7 +10,7 @@ An API for an E-commerce store. E-commerce (electronic commerce) is the buying a
 
 ### .env
 
-`` the object { key: value } can be found in config/env/index.js file. NB: Create your values `` 
+In the context of software development, the object { key: value } can commonly be found in the config/env/index.js file. This file serves as a configuration file, allowing developers to define various environment-specific settings for their application. The object follows a key-value pair structure, where each key represents a specific configuration setting and the corresponding value defines its value. These values can be customized according to the needs of the application, such as defining database connection details, API endpoints, or logging parameters. By centralizing these configurations in one file, it becomes easier to manage and modify them based on different deployment environments like development, staging, or production. The use of this object facilitates flexibility and reusability within the codebase by abstracting away environment-specific details from actual application logic.
 
 * PORT 
 * MONGO_URI
@@ -23,8 +23,8 @@ An API for an E-commerce store. E-commerce (electronic commerce) is the buying a
 
 ### Usage
 * Run npm install to install all the dependencies
-* Run npm start to the application inside the server folder or npm run server outside the server folder.
-* Connect to the API using Postman on port 8080.
+* Run ``npm start`` to run the project.
+* Connect to the API using Postman.
 
 ### API Endpoints
 
