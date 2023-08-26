@@ -28,120 +28,127 @@ In the context of software development, the object { key: value } can commonly b
 
 ### API Endpoints
 
-* User APIs
+* APIs dedicated to handling user.
 
-``
-|HTTP Verbs|            Endpoints            |                   Action                        |
-| ---------| ------------------------------- | ----------------------------------------------- |
-|  POST    | /api/user/register              | To sign up a new user account                   |
-|  POST    | /api/user/login                 | To login an existing user account               |
-|  POST    | /api/user/admin-login           | To login an existing admin                      |
-|  POST    | /api/user/cart                  | To creat a cart                                 |
-|  POST    | /api/user/forgot-password-token | To creat a forgotten password                   |     
-|  POST    | /api/user/cart/apply-coupon     | To apply a coupon in a certain cart             |
-|  POST    | /api/user/cart/cash-order       | To creat an order                               |
-|  GET     | /api/user/refresh               | Fetches a refreshed token                       |
-|  GET     | /api/user/logout                | logs out a user                                 |
-|  GET     | /api/user/cart                  | Fetches  carts                                  |
-|  GET     | /api/user/wishlist              | Fetches wish list                               |
-|  GET     | /api/user/get-orders            | Fetches orders                                  |
-|  GET     | /api/user/:id                   | Fetches a single user                           |
-|  PUT     | /api/user/order/update-order/:id| Updates order status    * ADMIN *               |
-|  PUT     | /api/user/reset-password/:token | Updates a password                              |
-|  PUT     | /api/user/save-address          | Saves address                                   |
-|  PUT     | /api/user/update-password       | Updates a user password                         |
-|  PUT     | /api/user/update-user           | Update user information                         |
-|  PUT     | /api/user/blocked-user/:id      | Blocks a user    * ADMIN *                      |
-|  PUT     | /api/user/unblocked-user/:id    | Unblocks a user  * ADMIN *                      |
-|  DELETE  | /api/user/empty-cart            | Delete cart (Empty cart)                        |
-|  DELETE  | /api/user/:id                   | Delete single user                              |
+|HTTP Verbs|            Endpoints            |                    Action                                     |    Superuser    |
+| ---------| ------------------------------- | ------------------------------------------------------------- | --------------- |  
+|  POST    | /api/user/register              | Create a brand-new user registration.                         |      user       |
+|  POST    | /api/user/login                 | Logging in to an account that already exists.                 |      user       |
+|  POST    | /api/user/admin-login           | To access the account of an already registered administrator  |      user       |
+|  POST    | /api/user/cart                  | In order to construct a cart.                                 |      user       |
+|  POST    | /api/user/forgot-password-token | To craft a token that can be used to recover a lost password. |      user       | 
+|  POST    | /api/user/cart/apply-coupon     | To redeem a coupon within a designated shopping cart.         |      user       |
+|  POST    | /api/user/cart/cash-order       | To generate an order                                          |      user       |
+|  GET     | /api/user/refresh               | Acquires a renewed token.                                     |      user       |
+|  GET     | /api/user/logout                | The system logs out a user.                                   |      user       |
+|  GET     | /api/user/cart                  | Retrieves cart                                                |      user       |
+|  GET     | /api/user/wishlist              | Retrieves wish list                                           |      user       |
+|  GET     | /api/user/get-orders            | Retrieves orders                                              |      user       |
+|  GET     | /api/user/:id                   | Retrieves a single user                                       |      user       |
+|  PUT     | /api/user/order/update-order/:id| Modifying the users order status update.                      |      admin      |
+|  PUT     | /api/user/reset-password/:token | Edits a password                                              |      user       |
+|  PUT     | /api/user/save-address          | Address preservation.                                         |      user       |
+|  PUT     | /api/user/update-password       | Modifies a users password.                                    |      user       |
+|  PUT     | /api/user/update-user           | Edit user information                                         |      user       |
+|  PUT     | /api/user/blocked-user/:id      | Prevents a user from accessing.                               |      admin      |
+|  PUT     | /api/user/unblocked-user/:id    | Provides the option to reverse blocking for a user.           |      admin      |
+|  DELETE  | /api/user/empty-cart            | Erase the shopping cart. (Empty cart)                         |      user       |
+|  DELETE  | /api/user/:id                   | Remove a sole user.                                           |      admin      |
 
-``
 
-* Product APIs
+* APIs dedicated to handling products.
 
-``
-|HTTP Verbs|            Endpoints            |                   Action                        |
-| ---------| ------------------------------- | ----------------------------------------------- |
-|  POST    | /api/product/create             | Creates a product * ADMIN *                     |
-|  GET     | /api/product/:id                | Fetches a single product    * ADMIN *           |
-|  GET     | /api/product/                   | Fetches all product                             |
-|  PUT     | /api/product/wishlist           | Update a wish list                              |
-|  PUT     | /api/product/rating             | Product rating                                  |
-|  PUT     | /api/product/:id                | Update product    * ADMIN *                     |     
-|  PUT     | /api/product/uploads/:id        | Upload multiple product images                  |
-|  DELETE  | /api/product/:id'               | Delete a product                                |
+|HTTP Verbs|            Endpoints            |                   Action                        |   Superuser |
+| ---------| ------------------------------- | ----------------------------------------------- | ----------- |
+|  POST    | /api/product/create             | Generates a new item.                           |    admin    |  
+|  GET     | /api/product/:id                | Retrieve one item.                              |    admin    |
+|  GET     | /api/product/                   | Retrieves every user product                    |    user     |
+|  PUT     | /api/product/wishlist           | Edit wish list                                  |    user     |
+|  PUT     | /api/product/rating             | Rating of the product                           |    user     |
+|  PUT     | /api/product/:id                | Refresh product information.                    |    admin    |
+|  PUT     | /api/product/uploads/:id        | Submit a collection of product images.          |    admin    |
+|  DELETE  | /api/product/:id'               | Remove a product                                |    admin    |
 
-``
 
-* Coupon APIs
+* APIs dedicated to handling coupon.
 
-``
-|HTTP Verbs|            Endpoints            |                   Action                        |
-| ---------| ------------------------------- | ----------------------------------------------- |
-|  POST    | /api/product/create             | Creates a coupon * ADMIN *                      |
-|  GET     | /api/product/                   | Fetches all coupons    * ADMIN *                |
-|  PUT     | /api/product/:id                | Updates a coupon    * ADMIN *                   |
-|  DELETE  | /api/product/:id                | Deletes a coupon    * ADMIN                     |
+|HTTP Verbs|            Endpoints            |                   Action                        |   Superuser   |
+| ---------| ------------------------------- | ----------------------------------------------- | ------------- |
+|  POST    | /api/coupont/create             | Generates a new coupon.                         |   admin       |
+|  GET     | /api/coupon/                    | Retrieves all coupons                           |   user        |
+|  PUT     | /api/coupon/:id                 | Modifies a coupon                               |   admin       |
+|  DELETE  | /api/coupon/:id                 | Remove a coupon                                 |   admin       |
 
-``
 
-* Category APIs
+* APIs dedicated to handling category.
 
-``
-|HTTP Verbs|            Endpoints            |                   Action                        |
-| ---------| ------------------------------- | ----------------------------------------------- |
-|  POST    | /api/category/create            | Creates a category * ADMIN *                    |
-|  GET     | /api/category/all               | Fetches all categories                          |
-|  GET     | /api/category/:id               | Fetches a signle categories                     |
-|  PUT     | /api/category/:id               | Updates a category    * ADMIN *                 |
-|  DELETE  | /api/category/:id               | Deletes a category    * ADMIN                   |
+|HTTP Verbs|            Endpoints            |                   Action                        |   Superuser   |
+| ---------| ------------------------------- | ----------------------------------------------- | ------------- |
+|  POST    | /api/category/create            | Generates a category                            |     admin     |
+|  GET     | /api/category/all               | Retrieves all categories                        |     user      |
+|  GET     | /api/category/:id               | Retrieves a signle category                     |     user      |
+|  PUT     | /api/category/:id               | Modifies a category                             |     admin     |
+|  DELETE  | /api/category/:id               | Removes a category                              |     admin     |
 
-``
 
-* Brand APIs
+* APIs dedicated to handling brand.
 
-``
-|HTTP Verbs|            Endpoints            |                   Action                        |
-| ---------| ------------------------------- | ----------------------------------------------- |
-|  POST    | /api/brand/create               | Creates a brand * ADMIN *                       |
-|  GET     | /api/brand/all                  | Fetches all brands                              |
-|  GET     | /api/brand/:id                  | Fetches a signle brand                          | 
-|  PUT     | /api/brand/:id                  | Updates a brand    * ADMIN *                    |
-|  DELETE  | /api/brand/:id                  | Deletes a brand    * ADMIN                      |
+|HTTP Verbs|            Endpoints            |                   Action                        |    Superuser  |
+| ---------| ------------------------------- | ----------------------------------------------- | ------------- |
+|  POST    | /api/brand/create               | Generates a brand                               |    admin      |
+|  GET     | /api/brand/all                  | Retrieves all brands                            |    user       |
+|  GET     | /api/brand/:id                  | Retrieves a signle brand                        |    user       |
+|  PUT     | /api/brand/:id                  | Modifies a brand                                |    admin      |
+|  DELETE  | /api/brand/:id                  | Removes a brand                                 |    admin      |
 
-``
+* APIs dedicated to handling blog
 
-* Blog APIs
+|HTTP Verbs|            Endpoints            |                   Action                        |    Superuser   |
+| ---------| ------------------------------- | ----------------------------------------------- | -------------- |
+|  POST    | /api/blog/create                | Generates a blog                                |     admin      |
+|  GET     | /api/blog/                      | Retrives all blogs                              |     user       |
+|  GET     | /api/blog/:id                   | Retrives a signle blog                          |     user       |
+|  PUT     | /api/blog/likes                 | Likes a blog                                    |     admin      |
+|  PUT     | /api/blog/dislikes              | Dislikes a blog                                 |     admin      |
+|  PUT     | /api/blog/uploads/:id           | Submit a collection of blog images.             |     admin      |
+|  PUT     | /api/blog/:id                   | Modifies a blog                                 |     admin      |
+|  DELETE  | /api/blog/:id                   | Removes a blog                                  |     admin      |
 
-``
-|HTTP Verbs|            Endpoints            |                   Action                        |
-| ---------| ------------------------------- | ----------------------------------------------- |
-|  POST    | /api/blog/create                | Creates a blog * ADMIN *                        |
-|  GET     | /api/blog/                      | Fetches all blogs                               |
-|  GET     | /api/blog/:id                   | Fetches a signle blog                           | 
-|  PUT     | /api/blog/likes                 | Likes a blog    * ADMIN *                       |
-|  PUT     | /api/blog/dislikes              | Dislikes a blog    * ADMIN                      |
-|  PUT     | /api/blog/uploads/:id           | Uploads blog images    * ADMIN                  |
-|  PUT     | /api/blog/:id                   | Update a blog    * ADMIN                        |
-|  DELETE  | /api/blog/:id                   | Deletes a blog   * ADMIN                        |
+* APIs dedicated to handling block category
 
-``
+|HTTP Verbs|            Endpoints            |                   Action                        |    Superuser   |
+| ---------| ------------------------------- | ----------------------------------------------- | -------------- |
+|  POST    | /api/blog/category/create       | Generates a blog category                       |     admin      |
+|  GET     | /api/blog/category/             | Retrieves all blog categories                   |     user       |
+|  GET     | /api/blog/category/:id          | Retrieves a signle blog category                |     user       |
+|  PUT     | /api/blog/category/likes        | Likes a blog category                           |     admin      |
+|  DELETE  | /api/blog/category/:id          | Removes a blog category                         |     admin      |
 
-* Blog Category APIs
+* APIs dedicated to handling colors.
 
-``
-|HTTP Verbs|            Endpoints            |                   Action                        |
-| ---------| ------------------------------- | ----------------------------------------------- |
-|  POST    | /api/blog/category/create       | Creates a blog category * ADMIN *               |
-|  GET     | /api/blog/category/             | Fetches all blog categories                     |
-|  GET     | /api/blog/category/:id          | Fetches a signle blog category                  | 
-|  PUT     | /api/blog/category/likes        | Likes a blog category    * ADMIN *              |
-|  DELETE  | /api/blog/category/:id          | Deletes a blog category  * ADMIN                |
+|HTTP Verbs|            Endpoints            |                   Action                        |    Superuser   |
+| ---------| ------------------------------- | ----------------------------------------------- | -------------- |
+|  POST    | /api/color/                     | Generates a blog category                       |     admin      |
+|  GET     | /api/color/:id                  | Retrieves all blog categories                   |     user       |
+|  GET     | /api/color/                     | Retrieves a signle blog category                |     user       |
+|  PUT     | /api/color/:id                  | Likes a blog category                           |     admin      |
+|  DELETE  | /api/color/:id                  | Removes a blog category                         |     admin      |
 
-``
+
+* APIs dedicated to handling inquiries.
+
+|HTTP Verbs|            Endpoints            |                   Action                        |     Superuser   |
+| ---------| ------------------------------- | ----------------------------------------------- | --------------- |
+|  POST    | /api/enquiry/                   | Generates a blog category                       |     admin       |
+|  GET     | /api/enquiry/:id                | Retrieves all blog categories                   |     user        |
+|  GET     | /api/enquiry/                   | Retrieves a signle blog category                |     user        |
+|  PUT     | /api/enquiry/:id                | Likes a blog category                           |     admin       |
+|  DELETE  | /api/enquiry/:id                | Removes a blog category                         |     admin       |
+
 
 ### Technologies Used
 * [NodeJS](https://nodejs.org/) This is a cross-platform runtime environment built on Chrome's V8 JavaScript engine used in running JavaScript codes on the server. It allows for installation and managing of dependencies and communication with databases.
 * [ExpressJS](https://www.expresjs.org/) This is a NodeJS web application framework.
 * [MongoDB](https://www.mongodb.com/) This is a free open source NOSQL document database with scalability and flexibility. Data are stored in flexible JSON-like documents.
+* [PayPal](https://developer.paypal.com/docs/api/payments/v1/) PayPal is an online payment system that makes paying for things online and sending and receiving money safe and secure. When you link your bank account, credit card or debit card to your PayPal account, you can use PayPal to make purchases online with participating stores.
+* [Cloudinary](https://cloudinary.com/) Cloudinary is an end-to-end image- and video-management solution for websites and mobile apps, covering everything from image and video uploads, storage, manipulations, optimizations to delivery.
