@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Thabiso-Timzo/express-store.git"
+    "url": "git+https://github.com/Thabiso-007/api.express-store.git"
   },
   "author": "Thabiso Hlatshwayo",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Thabiso-Timzo/express-store/issues"
+    "url": "https://github.com/Thabiso-007/api.express-store/issues"
   },
-  "homepage": "https://github.com/Thabiso-Timzo/express-store#readme",
+  "homepage": "https://github.com/Thabiso-007/api.express-store#readme",
   "dependencies": {
     "bcrypt": "^5.1.0",
     "body-parser": "^1.20.1",
@@ -32,8 +32,12 @@
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.0",
     "nodemon": "^2.0.20",
+    "paypal-rest-sdk": "^1.8.1",
     "sharp": "^0.31.3",
     "slugify": "^1.6.5",
     "uniqid": "^5.4.0"
+  },
+  "devDependencies": {
+    "env-cmd": "^8.0.2"
   }
 }
