@@ -6,5 +6,7 @@ module.exports = {
     email_password: process.env.EMAIL_PASSWORD,
     cloud_name: process.env.CLOUD_NAME,
     cloud_api_key: process.env.CLOUD_API_KEY,
-    cloud_api_secret: process.env.CLOUD_API_SECRET
+    cloud_api_secret: process.env.CLOUD_API_SECRET,
+    paypal_client_secret: process.env.PAYPAL_CLIENT_SECRET,
+    paypal_client_id: process.env.PAYPAL_CLIENT_ID
 }
