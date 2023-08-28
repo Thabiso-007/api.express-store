@@ -20,6 +20,8 @@ In the context of software development, the object { key: value } can commonly b
 * CLOUD_NAME
 * CLOUD_API_KEY 
 * CLOUD_API_SECRET 
+* PAYPAL_CLIENT_SECRET
+* PAYPAL_CLIENT_ID
 
 ### Usage
 * Run npm install to install all the dependencies
