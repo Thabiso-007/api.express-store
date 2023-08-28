@@ -147,6 +147,13 @@ In the context of software development, the object { key: value } can commonly b
 |  PUT     | /api/enquiry/:id                | Likes a blog category                           |     admin       |
 |  DELETE  | /api/enquiry/:id                | Removes a blog category                         |     admin       |
 
+* APIs dedicated to handling payments.
+
+|HTTP Verbs|            Endpoints            |                   Action                        |     Superuser   |
+| ---------| ------------------------------- | ----------------------------------------------- | --------------- |
+|  POST    | /api/orders/                    | Generates an order                              |     user        |
+|  POST     | /api/orders/:orderID/capture   | A user shares their order Id                    |     user        |
+
 
 ### Technologies Used
 * [NodeJS](https://nodejs.org/) This is a cross-platform runtime environment built on Chrome's V8 JavaScript engine used in running JavaScript codes on the server. It allows for installation and managing of dependencies and communication with databases.
