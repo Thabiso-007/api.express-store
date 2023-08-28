@@ -152,7 +152,7 @@ In the context of software development, the object { key: value } can commonly b
 |HTTP Verbs|            Endpoints            |                   Action                        |     Superuser   |
 | ---------| ------------------------------- | ----------------------------------------------- | --------------- |
 |  POST    | /api/orders/                    | Generates an order                              |     user        |
-|  POST     | /api/orders/:orderID/capture   | A user shares their order Id                    |     user        |
+|  POST    | /api/orders/:orderID/capture    | A user shares their order Id                    |     user        |
 
 
 ### Technologies Used
