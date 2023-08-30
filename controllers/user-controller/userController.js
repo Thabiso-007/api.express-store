@@ -284,7 +284,7 @@ const user = {
             try {
                 const token = await user.createPasswordResetToken();
                 await user.save();
-                const resetURL =  `Hi Please follow this link to reset your password. This link will expire in the next 10 munites. <a href='http://localhost:8080/api/user/reset-password/${token}'>Click here</a> to reset your password.`;
+                const resetURL =  `Hi Please follow this link to reset your password. This link will expire in the next 10 munites. <a href='http://localhost:8888/api/user/reset-password/${token}'>Click here</a> to reset your password.`;
                 const data = {
                     to: email,
                     subject: "Forgot Pasword Link",
