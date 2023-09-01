@@ -2,11 +2,12 @@
 An API (Application Programming Interface) for an E-commerce store plays a crucial role in enabling seamless integration between various systems and applications involved in the buying and selling of goods online. By providing a standardized method for communication and interaction, an E-commerce API simplifies the process of creating, managing, and updating product listings, inventory levels, order information, and payment processing. It allows developers to access essential functionalities of an E-commerce platform programmatically, facilitating the development of custom features and integrations tailored to specific business needs. Moreover, an E-commerce API ensures real-time synchronization of data across different channels, such as websites, mobile apps, and third-party integrations like marketplaces or social media platforms. With secure authentication mechanisms and well-documented endpoints, this robust interface empowers businesses to streamline their operations efficiently while enhancing customer experiences by offering a consistent flow of accurate information throughout the purchasing journey.
 
 ### Installation Guide
-* Clone this repository [here](https://github.com/Thabiso-007/api.express-store.git).
-* The develop branch is the most stable branch at any given time, ensure you're working from it.
-* Run npm install to install all dependencies
-* You can either work with the default mLab database or use your locally installed MongoDB. Do configure to your choice in the application entry file.
-* Create an .env file in your project root folder and add your variables. See .env.sample for assistance.
+
+* Clone the project repository from our version control system [here](https://github.com/Thabiso-007/api.express-store.git).
+* Install all project dependencies by running npm install in the project directory.
+* Create a .env file in the root directory of the project.
+* Inside the .env file, specify the required environment variables based on your local setup. These variables typically include database connection details, API keys, and any other configuration specific to your development environment.
+* Once you have set up the .env file with appropriate values, save it.
 
 ### .env
 
