@@ -25,9 +25,8 @@ In the context of software development, the object { key: value } can commonly b
 * PAYPAL_CLIENT_ID
 
 ### Usage
-* Run npm install to install all the dependencies
+* Run ``npm install`` to install all the dependencies
 * Run ``npm start`` to run the project.
-* Connect to the API using Postman.
 
 ### API Endpoints
 
