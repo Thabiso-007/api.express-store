@@ -20,6 +20,7 @@ const couponRoutes = require('./routes/coupon-routes/couponRoutes');
 const enquryRoutes = require('./routes/enquiry-routes/enquiryRoutes');
 const colorRoutes = require('./routes/color-routes/colorRoutes');
 const paymentRoutes = require('./routes/payment-routes/paymentRoutes');
+const uploadRoutes = require('./routes/upload-routes/uploadRoutes')
 
 // Server port
 const PORT = server_port || 5000;
@@ -57,6 +58,7 @@ app.use('/api/coupon', couponRoutes);
 app.use('/api/enquiry',enquryRoutes );
 app.use('/api/color', colorRoutes);
 app.use('/api/orders', paymentRoutes);
+app.use('/api/uploads', uploadRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server is listening on port: ${PORT}`.white.bold)
