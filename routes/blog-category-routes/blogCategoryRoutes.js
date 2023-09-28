@@ -4,13 +4,13 @@ const router = express.Router();
 const { blogcat } = require('../../controllers/blog-category-controller/blogCategoryController');
 const { isAdmin, authMiddleWare  } = require('../../middleware/authMiddleware');
 
-router.post('/create', isAdmin, authMiddleWare, blogcat.createCategory);
+router.post('/create', authMiddleWare, isAdmin, blogcat.createCategory);
 
 router.get('/all', blogcat.getAllCategories);
 router.get('/:id', blogcat.getCategory);
 
-router.delete('/:id', isAdmin, authMiddleWare, blogcat.deleteCategory);
+router.delete('/:id', authMiddleWare, isAdmin, blogcat.deleteCategory);
 
-router.put('/:id', isAdmin, authMiddleWare, blogcat.updateCategory);
+router.put('/:id', authMiddleWare, isAdmin, blogcat.updateCategory);
 
 module.exports = router;
