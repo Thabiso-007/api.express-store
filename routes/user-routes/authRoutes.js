@@ -22,11 +22,13 @@ router.get('/:id' ,authMiddleWare, user.getSingleUser);
 
 // router.put('/order/update-order/:id', authMiddleWare, isAdmin, user.updateOrderStatus);
 router.put('/reset-password/:token', user.resetPassword);
+router.put('/:id',authMiddleWare, user.updateUser)
+router.put('/role/:id', authMiddleWare, isAdmin, user.updateRole)
 
 // router.delete('/empty-cart', authMiddleWare, emptyCart);
 router.delete('/delete-product-cart/:cartItemId', authMiddleWare, user.deleteProductFromCart);
 router.delete('/update-product-cart/:cartItemId/:newQuantity', authMiddleWare, user.updateProductQuantityFromCart);
-router.delete('/:id', user.deleteSingleUser);
+router.delete('/:id', authMiddleWare, user.deleteSingleUser);
 
 router.put('/save-address', authMiddleWare, user.saveAddress);
 router.put('/update-password', authMiddleWare, user.updatePassword);

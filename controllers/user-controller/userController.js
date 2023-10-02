@@ -201,6 +201,25 @@ const user = {
         }
     ),
 
+    // Update a user
+    updateRole: asyncHandler(
+        async (req, res) => {
+            //const { id } = req.params
+            const { _id } = req.user;
+            try {
+                const updateRole = await User.findByIdAndUpdate(
+                    _id,
+                    {
+                        role: req.body?.role,
+                    },{ new: true }
+                );
+                res.status(200).json(updateRole);
+            } catch (error) {
+                res.status(500).json({ message: error.message });
+            }
+        }
+    ),
+
     // Save user Address
     saveAddress: asyncHandler(
         async (req, res, next) => {
