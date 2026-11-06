@@ -1,56 +1,33 @@
-const mongoose = require('mongoose'); // Erase if already required
+const mongoose = require("mongoose");
 
-// Declare the Schema of the Mongo model
-const blogSchema = new mongoose.Schema({
-    title: {
-        type: String,
-        required: true,
-    },
-    description: {
-        type: String,
-        required: true,
-    },
-    category: {
-        type: String,
-        required: true,
-    },
-    numViews: {
-        type: Number,
-        default: 0,
-    },
-    isLiked: {
-        type: Boolean,
-        default: false    
-    },
-    isDisliked: {
-        type: Boolean,
-        default: false
-    },
-    likes: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User"
-    }],
-    dislikes: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User"
-    }],
-    images: {
-        type: String,
-        default: "https://www.shutterstock.com/image-photo/bloggingblog-concepts-ideas-white-worktable-600w-1029506242.jpg"
-    },
-    author: {
-        type: String,
-        default: "Admin"
-    },
-    images: {
-        type: Array
-    }
-}, 
-    { toJSON: { virtuals: true }},
-    { toObject: { virtuals: true}},
-    { timestamps: true}
-)
+const blogSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true, trim: true },
+    description: { type: String, required: true },
+    category: { type: String, required: true },
+    numViews: { type: Number, default: 0 },
+    // Kept for backwards compatibility with existing clients; likeBlog /
+    // dislikeBlog keep them in sync with the likes / dislikes arrays.
+    isLiked: { type: Boolean, default: false },
+    isDisliked: { type: Boolean, default: false },
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    dislikes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    images: [
+      {
+        public_id: String,
+        url: String,
+      },
+    ],
+    author: { type: String, default: "Admin" },
+  },
+  {
+    // All options must live in ONE object. The original passed three separate
+    // objects, so `timestamps` was silently ignored, and `images` was declared
+    // twice (a String then an Array).
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
+);
 
-//Export the model
-const Blog = mongoose.model('Blog', blogSchema);
-module.exports = Blog;
+module.exports = mongoose.model("Blog", blogSchema);

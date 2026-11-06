@@ -4,13 +4,12 @@ const router = express.Router();
 const { enquiry } = require("../../controllers/enquiry-controller/equiryController");
 const { authMiddleWare, isAdmin } = require("../../middleware/authMiddleware");
 
-router.post("/", enquiry.createEnquiry);
-
-router.put("/:id", authMiddleWare, isAdmin, enquiry.updateEnquiry);
-
-router.delete("/:id", authMiddleWare, isAdmin, enquiry.deleteEnquiry);
-
-router.get("/:id", enquiry.getEnquiry);
-router.get("/", enquiry.getallEnquiry);
+// Anyone can submit an enquiry, but only admins may read/update/delete them:
+// enquiries contain name, email and phone number.
+router.post("/", enquiry.create);
+router.get("/", authMiddleWare, isAdmin, enquiry.getAll);
+router.put("/:id", authMiddleWare, isAdmin, enquiry.update);
+router.delete("/:id", authMiddleWare, isAdmin, enquiry.remove);
+router.get("/:id", authMiddleWare, isAdmin, enquiry.getById);
 
 module.exports = router;

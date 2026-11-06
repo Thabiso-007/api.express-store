@@ -1,57 +1,28 @@
-const asyncHandler = require('express-async-handler')
+const asyncHandler = require("express-async-handler");
 
-const Coupon = require('../../models/coupon-model/couponModel')
+const createCrudController = require("../../utils/crudController");
+const Coupon = require("../../models/coupon-model/couponModel");
+const ApiError = require("../../utils/apiError");
 
-const coupon = {
-    // Create coupon
-    createCoupon: asyncHandler(
-        async (req, res) => {
-            try {
-                const newCoupon = await Coupon.create(req.body)
-                res.status(200).json(newCoupon)
-            } catch (error) {
-                res.status(500).json({ message: error.message })
-            }
-        }
-    ),
+const coupon = createCrudController(Coupon, {
+  label: "Coupon",
+  fields: ["name", "expiry", "discount"],
+});
 
-    // Create coupon
-    getAllCoupons: asyncHandler(
-        async (req, res) => {
-            try {
-                const coupons = await Coupon.find()
-                res.status(200).json(coupons)
-            } catch (error) {
-                res.status(500).json({ message: error.message })
-            }
-        }   
-    ),
+/** Look up a coupon by name (used by the cart when applying a discount). */
+coupon.getCouponByName = asyncHandler(async (req, res) => {
+  const name = String(req.params.name || "").trim().toUpperCase();
+  const found = await Coupon.findOne({ name });
+  if (!found) throw ApiError.notFound("Coupon not found");
+  if (new Date(found.expiry).getTime() < Date.now()) {
+    throw ApiError.badRequest("This coupon has expired");
+  }
+  res.status(200).json(found);
+});
 
-    // Update coupon
-    updateCoupon: asyncHandler(
-        async (req, res) => {
-            const { id } = req.params
-            try {
-                const updateCoupon = await Coupon.findByIdAndUpdate(id, req.body, {  new: true})
-                res.status(200).json(updateCoupon)
-            } catch (error) {
-                res.status(500).json({ message: error.message })
-            }
-        }
-    ),
+coupon.createCoupon = coupon.create;
+coupon.getAllCoupons = coupon.getAll;
+coupon.updateCoupon = coupon.update;
+coupon.deleteCoupon = coupon.remove;
 
-    // Delete coupon
-    deleteCoupon: asyncHandler(
-        async (req, res) => {
-            const { id } = req.params
-            try {
-                const deleteCoupon = await Coupon.findByIdAndDelete(id)
-                res.status(200).json(deleteCoupon)
-            } catch (error) {
-                res.status(500).json({ message: error.message })
-            }
-        }
-    )
-}
-
-module.exports = { coupon }
+module.exports = { coupon };

@@ -1,45 +1,27 @@
-const fs = require("fs");
 const asyncHandler = require("express-async-handler");
 
-const {
-  cloudinaryUploadImg,
-  cloudinaryDeleteImg,
-} = require("../../utils/cloudinary");
+const { cloudinaryUploadImg, cloudinaryDeleteImg } = require("../../utils/cloudinary");
+const ApiError = require("../../utils/apiError");
 
 const uploads = {
-    // Uploads
-    uploadImages: asyncHandler(
-        async (req, res) => {
-            try {
-                const uploader = (path) => cloudinaryUploadImg(path, "images");
-                const urls = [];
-                const files = req.files;
-                for (const file of files) {
-                    const { path } = file;
-                    const newpath = await uploader(path);
-                    console.log(newpath);
-                    urls.push(newpath);
-                    fs.unlinkSync(path);
-                }
-                const images = urls.map((file) => {
-                    return file;
-                });
-                res.json(images);
-            } catch (error) {
-                res.status(500).json({ message: error.message });
-        }
-    }),
+  uploadImages: asyncHandler(async (req, res) => {
+    const files = req.files || [];
+    if (files.length === 0) throw ApiError.badRequest("No images were uploaded");
 
-    deleteImages: asyncHandler(
-        async (req, res) => {
-            const { id } = req.params;
-            try {
-                const deleted = cloudinaryDeleteImg(id, "images");
-                res.json({ message: "Deleted" });
-            } catch (error) {
-                res.status(500).json({ message: error.message });
-            }
-        })
+    const images = [];
+    for (const file of files) {
+      images.push(await cloudinaryUploadImg(file.buffer, { folder: "express-store/products" }));
     }
+    res.status(200).json(images);
+  }),
+
+  deleteImages: asyncHandler(async (req, res) => {
+    // Public ids often contain a folder slash, which `:id` cannot capture.
+    const publicId = decodeURIComponent(req.params[0] || req.params.id || "");
+    if (!publicId) throw ApiError.badRequest("A public_id is required");
+    const result = await cloudinaryDeleteImg(publicId);
+    res.status(200).json({ message: "Deleted", result });
+  }),
+};
 
 module.exports = { uploads };

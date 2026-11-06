@@ -1,13 +1,11 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const colorSchema = new mongoose.Schema({
-    title: {
-        type: String,
-        required: true,
-        unique: true,
-        index: true
-    }
-},{ timestamp: true });
+const colorSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true, unique: true, index: true, trim: true },
+  },
+  // `timestamp` (singular) was a typo: no createdAt/updatedAt were added.
+  { timestamps: true }
+);
 
-const Color = mongoose.model('Color', colorSchema);
-module.exports = Color;
+module.exports = mongoose.model("Color", colorSchema);

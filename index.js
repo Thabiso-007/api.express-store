@@ -1,65 +1,31 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const cookParser = require('cookie-parser');
-const cors = require('cors');
-const morgan = require('morgan');
+require("dotenv").config();
 
-require('colors');
-require('dotenv').config();
+const app = require("./app");
+const config = require("./config/env");
+const dbConnection = require("./config/connection/database");
 
-const { server_port } = require('./config/env');
-const { errorHandler } = require('./middleware/errorHandler');
-const dbConnection = require('./config/connection/database');
-const authRoutes = require('./routes/user-routes/authRoutes');
-const productRoutes = require('./routes/product-routes/productRoutes');
-const blogRoutes = require('./routes/blog-routes/blogRoutes');
-const categoryRoutes = require('./routes/category-routes/categoryRoutes');
-const blogCategoryRoutes = require('./routes/blog-category-routes/blogCategoryRoutes');
-const brandRoutes = require('./routes/brand-routes/brandRoutes');
-const couponRoutes = require('./routes/coupon-routes/couponRoutes');
-const enquryRoutes = require('./routes/enquiry-routes/enquiryRoutes');
-const colorRoutes = require('./routes/color-routes/colorRoutes');
-const paymentRoutes = require('./routes/payment-routes/paymentRoutes');
-const uploadRoutes = require('./routes/upload-routes/uploadRoutes')
+const isServerless = Boolean(process.env.VERCEL);
+const isDirectRun = require.main === module && !isServerless;
 
-// Server port
-const PORT = server_port || 5000;
+if (isDirectRun) {
+  config.validateEnv();
+}
 
-const app = express();
+// In a serverless function the connection is opened once per warm container.
+// We deliberately do not block module initialisation on it.
+if (config.db_connection || isDirectRun) {
+  dbConnection().catch((error) => {
+    console.error(`Database not connected: ${error.message}`);
+    if (isDirectRun) process.exitCode = 1;
+  });
+}
 
-// Db Connection
-dbConnection();
-app.use(express.static("client"));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({  extended: true}));
+if (isDirectRun) {
+  const PORT = config.server_port;
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Server is listening on port: ${PORT}`);
+  });
+}
 
-app.use(cookParser()); 
-app.use(cors());
-app.use(morgan('tiny'));
-
-// respond with "server is running" when a GET request is made to the homepage
-app.get('/', function (req, res) {
-    res.send('server is running')
-});
-
-// Middleware
-app.use(errorHandler)
-
-// Routes
-app.use('/api/user', authRoutes);
-app.use('/api/product', productRoutes);
-app.use('/api/blog', blogRoutes);
-app.use('/api/category', categoryRoutes);
-app.use('/api/blog/category', blogCategoryRoutes);
-app.use('/api/brand', brandRoutes);
-app.use('/api/coupon', couponRoutes);
-app.use('/api/enquiry',enquryRoutes );
-app.use('/api/color', colorRoutes);
-app.use('/api/orders', paymentRoutes);
-app.use('/api/uploads', uploadRoutes);
-
-app.listen(PORT, () => {
-    console.log(`Server is listening on port: ${PORT}`.white.bold)
-}); 
+// @vercel/node expects the Express app as the module export.
+module.exports = app;

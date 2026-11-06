@@ -1,70 +1,17 @@
-const asyncHandler = require('express-async-handler')
+const createCrudController = require("../../utils/crudController");
+const Category = require("../../models/category-model/categoryModel");
 
-const Category = require('../../models/category-model/categoryModel')
+const category = createCrudController(Category, {
+  label: "Category",
+  fields: ["title"],
+});
 
-const category = {
-    // Create category
-    createCategory: asyncHandler(
-        async (req, res) => {
-            try {
-                const newCategory = await Category.create(req.body);
-                res.status(200).json(newCategory);
-            } catch (error) {
-                res.status(500).json({ message: error.message });
-            }
-        }
-    ),
+// Named aliases keep the original controller API working for any consumer
+// that imported these methods by name.
+category.createCategory = category.create;
+category.getAllCategories = category.getAll;
+category.getCategory = category.getById;
+category.updateCategory = category.update;
+category.deleteCategory = category.remove;
 
-    // Update catergory
-    updateCategory: asyncHandler(
-        async (req, res) => {
-            const { id } = req.params; 
-            try {
-                const updatedCategory = await Category.findByIdAndUpdate(id, req.body, { new: true });
-                res.status(200).json(updatedCategory);
-            } catch (error) {
-                res.status(500).json({ message: error.message });
-            }
-        }
-    ),
-
-    // Delete category
-    deleteCategory: asyncHandler(
-        async (req, res) => {
-            const { id } = req.params 
-            try {
-                const deletedCategory = await Category.findByIdAndDelete(id);
-                res.status(200).json(deletedCategory);
-            } catch (error) {
-                res.status(500).json({ message: error.message });
-            }
-        }
-    ),
-
-    // Fetch category
-    getCategory: asyncHandler(
-        async (req, res) => {
-            const { id } = req.params
-            try {
-                const fetchCategory = await Category.findById(id);
-                res.status(200).json(fetchCategory);
-            } catch (error) {
-                res.status(500).json({ message: error.message });
-            }
-        }
-    ),
-
-    // Fetch all category
-    getAllCategories: asyncHandler(
-        async (req, res) => {
-            try {
-                const fetchCategories = await Category.find();
-                res.status(200).json(fetchCategories);
-            } catch (error) {
-                res.status(500).json({ message: error.message });
-            }
-        }
-    )
-}
-
-module.exports = { category }
+module.exports = { category };
