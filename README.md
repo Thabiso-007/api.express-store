@@ -1,163 +1,265 @@
-### Introduction
-An API (Application Programming Interface) for an E-commerce store plays a crucial role in enabling seamless integration between various systems and applications involved in the buying and selling of goods online. By providing a standardized method for communication and interaction, an E-commerce API simplifies the process of creating, managing, and updating product listings, inventory levels, order information, and payment processing. It allows developers to access essential functionalities of an E-commerce platform programmatically, facilitating the development of custom features and integrations tailored to specific business needs. Moreover, an E-commerce API ensures real-time synchronization of data across different channels, such as websites, mobile apps, and third-party integrations like marketplaces or social media platforms. With secure authentication mechanisms and well-documented endpoints, this robust interface empowers businesses to streamline their operations efficiently while enhancing customer experiences by offering a consistent flow of accurate information throughout the purchasing journey.
+# api.express-store
 
-### Installation Guide
+A REST API for an e-commerce store: users, products, categories, brands, colors,
+blogs, coupons, enquiries, carts, orders, image uploads and PayPal payments.
+Built with Express, MongoDB/Mongoose and JWT authentication.
 
-* Clone the project repository from our version control system [here](https://github.com/Thabiso-007/api.express-store.git).
-* Install all project dependencies by running npm install in the project directory.
-* Create a .env file in the root directory of the project.
-* Inside the .env file, specify the required environment variables based on your local setup. These variables typically include database connection details, API keys, and any other configuration specific to your development environment.
-* Once you have set up the .env file with appropriate values, save it.
+---
 
-### .env
+## Requirements
 
-In the context of software development, the object { key: value } can commonly be found in the config/env/index.js file. This file serves as a configuration file, allowing developers to define various environment-specific settings for their application. The object follows a key-value pair structure, where each key represents a specific configuration setting and the corresponding value defines its value. These values can be customized according to the needs of the application, such as defining database connection details, API endpoints, or logging parameters. By centralizing these configurations in one file, it becomes easier to manage and modify them based on different deployment environments like development, staging, or production. The use of this object facilitates flexibility and reusability within the codebase by abstracting away environment-specific details from actual application logic.
+- **Node.js 20 or newer** (Node 20+ is required by `nodemailer` 10 and for the
+  built-in `--watch` / `node --test` tooling)
+- A MongoDB database (local or Atlas)
 
-* PORT 
-* MONGO_URI
-* JWT_SECRET 
-* EMAIL_ADDRESS 
-* EMAIL_PASSWORD  
-* CLOUD_NAME
-* CLOUD_API_KEY 
-* CLOUD_API_SECRET 
-* PAYPAL_CLIENT_SECRET
-* PAYPAL_CLIENT_ID
+## Installation
 
-### Usage
-* Run ``npm install`` to install all the dependencies
-* Run ``npm start`` to run the project.
+```bash
+git clone https://github.com/Thabiso-007/api.express-store.git
+cd api.express-store
+npm ci
+cp .env.example .env      # then fill in your own values
+npm run dev               # or: npm start
+```
 
-### API Endpoints
+The server listens on `PORT` (default `5000`) and binds to `0.0.0.0`.
+`GET /` returns a small status payload and `GET /api/health` reports the
+database connection state.
 
-* APIs dedicated to handling user.
+### Scripts
 
-|HTTP Verbs|            Endpoints            |                    Action                                     |    Superuser    |
-| ---------| ------------------------------- | ------------------------------------------------------------- | --------------- |  
-|  POST    | /api/user/register              | Create a brand-new user registration.                         |      user       |
-|  POST    | /api/user/login                 | Logging in to an account that already exists.                 |      user       |
-|  POST    | /api/user/admin-login           | To access the account of an already registered administrator  |      user       |
-|  POST    | /api/user/cart                  | In order to construct a cart.                                 |      user       |
-|  POST    | /api/user/forgot-password-token | To craft a token that can be used to recover a lost password. |      user       | 
-|  POST    | /api/user/cart/apply-coupon     | To redeem a coupon within a designated shopping cart.         |      user       |
-|  POST    | /api/user/cart/cash-order       | To generate an order                                          |      user       |
-|  GET     | /api/user/refresh               | Acquires a renewed token.                                     |      user       |
-|  GET     | /api/user/logout                | The system logs out a user.                                   |      user       |
-|  GET     | /api/user/cart                  | Retrieves cart                                                |      user       |
-|  GET     | /api/user/wishlist              | Retrieves wish list                                           |      user       |
-|  GET     | /api/user/get-orders            | Retrieves orders                                              |      user       |
-|  GET     | /api/user/:id                   | Retrieves a single user                                       |      user       |
-|  PUT     | /api/user/order/update-order/:id| Modifying the users order status update.                      |      admin      |
-|  PUT     | /api/user/reset-password/:token | Edits a password                                              |      user       |
-|  PUT     | /api/user/save-address          | Address preservation.                                         |      user       |
-|  PUT     | /api/user/update-password       | Modifies a users password.                                    |      user       |
-|  PUT     | /api/user/update-user           | Edit user information                                         |      user       |
-|  PUT     | /api/user/blocked-user/:id      | Prevents a user from accessing.                               |      admin      |
-|  PUT     | /api/user/unblocked-user/:id    | Provides the option to reverse blocking for a user.           |      admin      |
-|  DELETE  | /api/user/empty-cart            | Erase the shopping cart. (Empty cart)                         |      user       |
-|  DELETE  | /api/user/:id                   | Remove a sole user.                                           |      admin      |
+| Command | Description |
+| --- | --- |
+| `npm start` | Run the server (`node index.js`) |
+| `npm run dev` | Run with auto-reload (`node --watch index.js`) |
+| `npm test` | Run the 46 regression tests (no MongoDB needed) |
+| `npm run audit` | Check production dependencies for known vulnerabilities |
 
+### Environment variables
 
-* APIs dedicated to handling products.
+See [`.env.example`](./.env.example) for the annotated template. `MONGO_URI`
+and `JWT_SECRET` are required and the server fails fast with a readable message
+if either is missing.
 
-|HTTP Verbs|            Endpoints            |                   Action                        |   Superuser |
-| ---------| ------------------------------- | ----------------------------------------------- | ----------- |
-|  POST    | /api/product/create             | Generates a new item.                           |    admin    |  
-|  GET     | /api/product/:id                | Retrieve one item.                              |    admin    |
-|  GET     | /api/product/                   | Retrieves every user product                    |    user     |
-|  PUT     | /api/product/wishlist           | Edit wish list                                  |    user     |
-|  PUT     | /api/product/rating             | Rating of the product                           |    user     |
-|  PUT     | /api/product/:id                | Refresh product information.                    |    admin    |
-|  PUT     | /api/product/uploads/:id        | Submit a collection of product images.          |    admin    |
-|  DELETE  | /api/product/:id'               | Remove a product                                |    admin    |
+| Variable | Purpose |
+| --- | --- |
+| `PORT` | HTTP port (default `5000`) |
+| `NODE_ENV` | `development` / `production` / `test` |
+| `CLIENT_URL` | Comma-separated allowed CORS origins (empty = reflect origin) |
+| `APP_URL` | Frontend base URL used to build password-reset links |
+| `MONGO_URI` | MongoDB connection string |
+| `JWT_SECRET` | Secret used to sign access and refresh tokens |
+| `JWT_EXPIRES_IN`, `REFRESH_TOKEN_EXPIRES_IN` | Token lifetimes (default `1h` / `1d`) |
+| `EMAIL_ADDRESS`, `EMAIL_PASSWORD`, `EMAIL_FROM` | SMTP credentials for password reset |
+| `CLOUD_NAME`, `CLOUD_API_KEY`, `CLOUD_API_SECRET` | Cloudinary image uploads |
+| `PAYPAL_MODE`, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_CURRENCY` | PayPal Orders v2 |
 
+Never commit `.env`; it is git-ignored.
 
-* APIs dedicated to handling coupon.
+---
 
-|HTTP Verbs|            Endpoints            |                   Action                        |   Superuser   |
-| ---------| ------------------------------- | ----------------------------------------------- | ------------- |
-|  POST    | /api/coupont/create             | Generates a new coupon.                         |   admin       |
-|  GET     | /api/coupon/                    | Retrieves all coupons                           |   user        |
-|  PUT     | /api/coupon/:id                 | Modifies a coupon                               |   admin       |
-|  DELETE  | /api/coupon/:id                 | Remove a coupon                                 |   admin       |
+## Authentication
 
+1. `POST /api/user/register` or `POST /api/user/login` returns a short-lived
+   **access token** (`token`) and sets a **refresh token** in an `httpOnly`
+   cookie (24 h, `SameSite=None; Secure` in production).
+2. Send the access token as `Authorization: Bearer <token>` on protected routes.
+3. `GET /api/user/refresh` exchanges the refresh cookie for a new access token.
+4. `GET /api/user/logout` clears both.
 
-* APIs dedicated to handling category.
+Middleware checks that the user still exists, is not blocked, and that the
+token was issued after the last password change. `admin` routes additionally
+require `role === "admin"`. Registering never accepts `role`, `isBlocked`,
+`wishlist` or `refreshToken` from the request body.
 
-|HTTP Verbs|            Endpoints            |                   Action                        |   Superuser   |
-| ---------| ------------------------------- | ----------------------------------------------- | ------------- |
-|  POST    | /api/category/create            | Generates a category                            |     admin     |
-|  GET     | /api/category/all               | Retrieves all categories                        |     user      |
-|  GET     | /api/category/:id               | Retrieves a signle category                     |     user      |
-|  PUT     | /api/category/:id               | Modifies a category                             |     admin     |
-|  DELETE  | /api/category/:id               | Removes a category                              |     admin     |
+### Response / error format
 
+Success responses return JSON (mostly the created/updated document). Errors
+share one shape:
 
-* APIs dedicated to handling brand.
+```json
+{ "message": "Product not found" }
+```
 
-|HTTP Verbs|            Endpoints            |                   Action                        |    Superuser  |
-| ---------| ------------------------------- | ----------------------------------------------- | ------------- |
-|  POST    | /api/brand/create               | Generates a brand                               |    admin      |
-|  GET     | /api/brand/all                  | Retrieves all brands                            |    user       |
-|  GET     | /api/brand/:id                  | Retrieves a signle brand                        |    user       |
-|  PUT     | /api/brand/:id                  | Modifies a brand                                |    admin      |
-|  DELETE  | /api/brand/:id                  | Removes a brand                                 |    admin      |
+| Status | Meaning |
+| --- | --- |
+| `400` | Validation error, malformed id / filter, expired reset token |
+| `401` | Missing, invalid or expired token, invalid credentials |
+| `403` | Blocked account or insufficient permissions |
+| `404` | Unknown route or resource |
+| `409` | Duplicate unique field (email, slug, coupon name, …) |
+| `413` | Uploaded file too large |
+| `502` / `503` | PayPal / SMTP / Cloudinary unavailable or unconfigured |
 
-* APIs dedicated to handling blog
+Stack traces are only included outside production.
 
-|HTTP Verbs|            Endpoints            |                   Action                        |    Superuser   |
-| ---------| ------------------------------- | ----------------------------------------------- | -------------- |
-|  POST    | /api/blog/create                | Generates a blog                                |     admin      |
-|  GET     | /api/blog/                      | Retrives all blogs                              |     user       |
-|  GET     | /api/blog/:id                   | Retrives a signle blog                          |     user       |
-|  PUT     | /api/blog/likes                 | Likes a blog                                    |     admin      |
-|  PUT     | /api/blog/dislikes              | Dislikes a blog                                 |     admin      |
-|  PUT     | /api/blog/uploads/:id           | Submit a collection of blog images.             |     admin      |
-|  PUT     | /api/blog/:id                   | Modifies a blog                                 |     admin      |
-|  DELETE  | /api/blog/:id                   | Removes a blog                                  |     admin      |
+---
 
-* APIs dedicated to handling block category
+## API endpoints
 
-|HTTP Verbs|            Endpoints            |                   Action                        |    Superuser   |
-| ---------| ------------------------------- | ----------------------------------------------- | -------------- |
-|  POST    | /api/blog/category/create       | Generates a blog category                       |     admin      |
-|  GET     | /api/blog/category/             | Retrieves all blog categories                   |     user       |
-|  GET     | /api/blog/category/:id          | Retrieves a signle blog category                |     user       |
-|  PUT     | /api/blog/category/likes        | Likes a blog category                           |     admin      |
-|  DELETE  | /api/blog/category/:id          | Removes a blog category                         |     admin      |
+`🔓` public · `🔑` any authenticated user · `🛡️` admin only · `🍪` refresh cookie.
 
-* APIs dedicated to handling colors.
+### Users, auth, cart, wishlist, orders
 
-|HTTP Verbs|            Endpoints            |                   Action                        |    Superuser   |
-| ---------| ------------------------------- | ----------------------------------------------- | -------------- |
-|  POST    | /api/color/                     | Generates a blog category                       |     admin      |
-|  GET     | /api/color/:id                  | Retrieves all blog categories                   |     user       |
-|  GET     | /api/color/                     | Retrieves a signle blog category                |     user       |
-|  PUT     | /api/color/:id                  | Likes a blog category                           |     admin      |
-|  DELETE  | /api/color/:id                  | Removes a blog category                         |     admin      |
+| Method | Endpoint | Access | Action |
+| --- | --- | --- | --- |
+| POST | `/api/user/register` | 🔓 | Create an account |
+| POST | `/api/user/login` | 🔓 | Log in |
+| POST | `/api/user/admin-login` | 🔓 | Log in as an admin |
+| POST | `/api/user/forgot-password-token` | 🔓 | E-mail a reset link (never returns the token) |
+| PUT | `/api/user/reset-password/:token` | 🔓 | Set a new password |
+| GET | `/api/user/refresh` | 🍪 | Issue a new access token |
+| GET | `/api/user/logout` | 🍪 | Invalidate the refresh token |
+| GET | `/api/user/all` | 🛡️ | List users (credentials stripped) |
+| GET | `/api/user/:id` | 🔑 | Get own profile (admins: any) |
+| DELETE | `/api/user/:id` | 🔑 | Delete own account (admins: any) |
+| PUT | `/api/user/update-user` | 🔑 | Update own profile |
+| PUT | `/api/user/:id` | 🔑 | Update the targeted user (self or admin) |
+| PUT | `/api/user/save-address` | 🔑 | Save the address |
+| PUT | `/api/user/update-password` | 🔑 | Change password (optional `currentPassword`) |
+| PUT | `/api/user/role/:id` | 🛡️ | Set `role` to `user` or `admin` |
+| PUT | `/api/user/blocked-user/:id` | 🛡️ | Block a user |
+| PUT | `/api/user/unblocked-user/:id` | 🛡️ | Unblock a user |
+| POST | `/api/user/cart` | 🔑 | Add/update a cart line (price taken from the DB) |
+| GET | `/api/user/cart` | 🔑 | List all cart lines |
+| DELETE | `/api/user/empty-cart` | 🔑 | Empty the cart |
+| DELETE | `/api/user/delete-product-cart/:cartItemId` | 🔑 | Remove one cart line |
+| PUT | `/api/user/cart/:cartItemId/:newQuantity` | 🔑 | Change a line's quantity |
+| POST | `/api/user/cart/apply-coupon` | 🔑 | Apply a coupon to the cart |
+| POST | `/api/user/cart/create-order` | 🔑 | Create an order (server-side totals + stock) |
+| GET | `/api/user/get-orders` | 🔑 | List own orders |
+| GET | `/api/user/all-orders` | 🛡️ | List all orders |
+| PUT | `/api/user/order/update-order/:id` | 🛡️ | Update order status |
+| GET | `/api/user/wishlist` | 🔑 | Get the populated wishlist |
 
+`DELETE /api/user/update-product-cart/:cartItemId/:newQuantity` is kept as a
+legacy alias for changing quantity, but the `PUT` route above is preferred.
 
-* APIs dedicated to handling inquiries.
+### Products
 
-|HTTP Verbs|            Endpoints            |                   Action                        |     Superuser   |
-| ---------| ------------------------------- | ----------------------------------------------- | --------------- |
-|  POST    | /api/enquiry/                   | Generates a blog category                       |     admin       |
-|  GET     | /api/enquiry/:id                | Retrieves all blog categories                   |     user        |
-|  GET     | /api/enquiry/                   | Retrieves a signle blog category                |     user        |
-|  PUT     | /api/enquiry/:id                | Likes a blog category                           |     admin       |
-|  DELETE  | /api/enquiry/:id                | Removes a blog category                         |     admin       |
+| Method | Endpoint | Access | Action |
+| --- | --- | --- | --- |
+| GET | `/api/product` | 🔓 | List products (see filtering below) |
+| GET | `/api/product/:id` | 🔓 | Get one product |
+| POST | `/api/product/create` | 🛡️ | Create a product (slug generated) |
+| PUT | `/api/product/:id` | 🛡️ | Update a product |
+| DELETE | `/api/product/:id` | 🛡️ | Delete a product |
+| PUT | `/api/product/wishlist` | 🔑 | Toggle wishlist membership |
+| PUT | `/api/product/rating` | 🔑 | Rate 1–5 (one rating per user) |
+| PUT | `/api/product/uploads/:id` | 🛡️ | Upload images (`multipart/form-data`, field `images`) |
 
-* APIs dedicated to handling payments.
+`GET /api/product` supports safe filtering, sorting, field selection and
+pagination. Only known fields/operators are accepted; `$where` or unknown keys
+return `400`.
 
-|HTTP Verbs|            Endpoints            |                   Action                        |     Superuser   |
-| ---------| ------------------------------- | ----------------------------------------------- | --------------- |
-|  POST    | /api/orders/                    | Generates an order                              |     user        |
-|  POST    | /api/orders/:orderID/capture    | A user shares their order Id                    |     user        |
+```
+GET /api/product?category=shoes&price[gte]=100&price[lte]=500&sort=-price&fields=title,price&page=2&limit=20
+```
 
+Defaults: `sort=-createdAt`, `fields=-__v`, `page=1`, `limit=12` (max `100`).
+`X-Total-Count` and `X-Total-Pages` response headers carry the totals.
 
-### Technologies Used
-* [NodeJS](https://nodejs.org/) This is a cross-platform runtime environment built on Chrome's V8 JavaScript engine used in running JavaScript codes on the server. It allows for installation and managing of dependencies and communication with databases.
-* [ExpressJS](https://www.expresjs.org/) This is a NodeJS web application framework.
-* [MongoDB](https://www.mongodb.com/) This is a free open source NOSQL document database with scalability and flexibility. Data are stored in flexible JSON-like documents.
-* [PayPal](https://developer.paypal.com/docs/api/payments/v1/) PayPal is an online payment system that makes paying for things online and sending and receiving money safe and secure. When you link your bank account, credit card or debit card to your PayPal account, you can use PayPal to make purchases online with participating stores.
-* [Cloudinary](https://cloudinary.com/) Cloudinary is an end-to-end image- and video-management solution for websites and mobile apps, covering everything from image and video uploads, storage, manipulations, optimizations to delivery.
+### Blogs and blog categories
+
+| Method | Endpoint | Access | Action |
+| --- | --- | --- | --- |
+| GET | `/api/blog` | 🔓 | List blogs |
+| GET | `/api/blog/:id` | 🔓 | Get a blog (increments `numViews`) |
+| POST | `/api/blog/create` | 🛡️ | Create a blog |
+| PUT | `/api/blog/:id` | 🛡️ | Update a blog |
+| DELETE | `/api/blog/:id` | 🛡️ | Delete a blog |
+| PUT | `/api/blog/likes` | 🔑 | Toggle the current user's like |
+| PUT | `/api/blog/dislikes` | 🔑 | Toggle the current user's dislike |
+| PUT | `/api/blog/uploads/:id` | 🛡️ | Upload blog images |
+| GET | `/api/blog/category`, `/api/blog/category/all`, `/api/blog/category/:id` | 🔓 | Read blog categories |
+| POST | `/api/blog/category/create`, PUT/DELETE `/api/blog/category/:id` | 🛡️ | Manage blog categories |
+
+### Categories, brands, colors, coupons, enquiries
+
+| Method | Endpoint | Access | Action |
+| --- | --- | --- | --- |
+| GET | `/api/category`, `/api/category/all`, `/api/category/:id` | 🔓 | Read product categories |
+| POST | `/api/category/create`, PUT/DELETE `/api/category/:id` | 🛡️ | Manage product categories |
+| GET | `/api/brand`, `/api/brand/all`, `/api/brand/:id` | 🔓 | Read brands |
+| POST | `/api/brand/create`, PUT/DELETE `/api/brand/:id` | 🛡️ | Manage brands |
+| GET | `/api/color`, `/api/color/:id` | 🔓 | Read colors |
+| POST | `/api/color`, PUT/DELETE `/api/color/:id` | 🛡️ | Manage colors |
+| GET | `/api/coupon`, `/api/coupon/name/:name`, `/api/coupon/:id` | 🛡️ | Read coupons |
+| POST | `/api/coupon/create`, PUT/DELETE `/api/coupon/:id` | 🛡️ | Manage coupons |
+| POST | `/api/enquiry` | 🔓 | Submit an enquiry |
+| GET | `/api/enquiry`, `/api/enquiry/:id` | 🛡️ | Read enquiries (personal data) |
+| PUT/DELETE | `/api/enquiry/:id` | 🛡️ | Update / delete an enquiry |
+
+### Uploads and payments
+
+| Method | Endpoint | Access | Action |
+| --- | --- | --- | --- |
+| POST | `/api/uploads` | 🛡️ | Upload images, returns `[{ url, asset_id, public_id }]` |
+| DELETE | `/api/uploads/delete-img/:publicId` (also `/*` for ids with slashes) | 🛡️ | Delete a Cloudinary image |
+| POST | `/api/orders` | 🔑 | Create a PayPal order (`{ "product": { "cost": "10.00" } }`, or `amount`) |
+| POST | `/api/orders/:orderID/capture` | 🔑 | Capture a PayPal order |
+
+Images are held in memory (max 5 MB each, max 10 files) and resized by a
+Cloudinary transformation, so nothing is written to the local filesystem —
+this also works on read-only/serverless hosts. `PAYPAL_MODE=live` switches the
+PayPal base URL to production.
+
+### Deployment
+
+`vercel.json` routes every request to `index.js`, which exports the Express
+app and opens one memoised MongoDB connection per warm container. Locally,
+`index.js` starts `app.listen()` only when executed directly.
+
+CI (`.github/workflows/ci.yml`) installs with `npm ci`, checks the app loads
+and runs `npm test` on Node 20 and 22.
+
+---
+
+## What was fixed
+
+A non-exhaustive list of the bugs addressed in this update:
+
+- **Security / auth**: un-awaited `bcrypt.compare` accepted *any* password;
+  admin login dereferenced a null user; role escalation via `register`;
+  public user/enquiry listings exposed password hashes and personal data;
+  password-reset tokens were returned in the HTTP response and pointed at a
+  hard-coded `localhost` URL; missing/invalid tokens returned `200`; role
+  updates targeted the admin instead of `:id`; `PUT /:id` shadowed
+  `/save-address` and other specific routes.
+- **Data integrity**: the `pre('save')` hook re-hashed already-hashed passwords
+  on every save (permanent lockout); `Cart.findOneOne` did not exist;
+  `Product.findOneAndUpdate(id, …)` / `findOneAndDelete(id)` passed a string as
+  a filter; `populate('wishList')` referenced a field that does not exist;
+  ratings read `postedBy` instead of `postedby` and wrote `totalratings`
+  instead of `totalrating`; `getUserCart` returned a single line; client-
+  supplied cart/order prices were trusted; uploaded image URLs were never
+  persisted (a projection was used instead of an update); like/dislike sent
+  multiple responses and used global flags instead of per-user arrays.
+- **Startup / infra**: the error handler was registered *before* all routes;
+  no 404 handler; `colors` was used without being required; `vercel.json` had
+  no rewrites; `express.static("client")` pointed at a non-existent folder;
+  `sharp` wrote to directories that do not exist and then deleted the file it
+  had just written; `cloudinaryUploads` was imported but never exported and the
+  Cloudinary callback ignored its `error` argument; `sendEmail` was wrapped as
+  an Express handler and silently swallowed failures; native `bcrypt` failed to
+  build on modern Node, so hashing now uses pure-JS `bcryptjs`.
+- **Models / HTTP semantics**: duplicate `images` keys and three separate
+  options objects in the blog schema (timestamps were never applied),
+  `timestamp` typo on colors, `String` rating average, `paidAt` defaulted at
+  schema definition time, required Razorpay fields on a PayPal order,
+  `res.json(500).json(...)` and other double-response bugs, missing 404s,
+  `NaN` pagination when `page`/`limit` were absent, unchecked filters, and
+  inconsistent error statuses/stack traces.
+- **Added**: central config with validation, `ApiError` + consistent error
+  mapping, request-body whitelisting, safe product query builder, shared CRUD
+  controller, new cart/coupon/order endpoints, `/api/health`, CORS config,
+  `.env.example`, `.gitignore`, Vercel rewrites, CI, and a 46-test regression
+  suite that needs no database. `npm audit` reports **0** vulnerabilities
+  across all dependencies.
+
+## Technologies
+
+[Node.js](https://nodejs.org/) · [Express](https://expressjs.com/) ·
+[MongoDB / Mongoose](https://www.mongodb.com/) · [JWT](https://jwt.io/) ·
+[Cloudinary](https://cloudinary.com/) · [PayPal Orders v2](https://developer.paypal.com/docs/api/orders/v2/) ·
+[Nodemailer](https://nodemailer.com/) · [node:test](https://nodejs.org/api/test.html)

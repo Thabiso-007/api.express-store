@@ -1,138 +1,124 @@
-const asyncHandler = require('express-async-handler');
-const fetch = require('node-fetch');
+const asyncHandler = require("express-async-handler");
+const fetch = require("node-fetch");
 
-const { paypal_client_secret, paypal_client_id } = require('../../config/env');
+const config = require("../../config/env");
+const ApiError = require("../../utils/apiError");
+const { parseAmount } = require("../../utils/helpers");
 
-const base = "https://api-m.sandbox.paypal.com";
+/** Parse a PayPal response body without crashing on an empty/non-JSON body. */
+const readJson = async (response, fallback = {}) => {
+  const text = await response.text();
+  if (!text) return fallback;
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw ApiError.badGateway("PayPal returned an invalid response");
+  }
+};
 
-/**
- * Generate an OAuth 2.0 access token for authenticating with PayPal REST APIs.
- * @see https://developer.paypal.com/api/rest/authentication/
- */
+const safeFetch = async (url, options) => {
+  try {
+    return await fetch(url, options);
+  } catch (error) {
+    console.error("PayPal request failed:", error.message);
+    throw ApiError.badGateway("Could not reach PayPal");
+  }
+};
+
+const handleResponse = async (response) => ({
+  jsonResponse: await readJson(response),
+  httpStatusCode: response.status,
+});
+
+/** Generate an OAuth 2.0 access token for the PayPal REST API. */
 const generateAccessToken = async () => {
-    try {
-        if (!paypal_client_id || !paypal_client_secret) {
-            throw new Error("MISSING_API_CREDENTIALS");
-        }
-        const auth = Buffer.from(
-        paypal_client_id + ":" + paypal_client_secret
-        ).toString("base64");
-        const response = await fetch(`${base}/v1/oauth2/token`, {
-            method: "POST",
-            body: "grant_type=client_credentials",
-            headers: {
-                Authorization: `Basic ${auth}`,
-            },
-        }   
+  if (!config.paypal_client_id || !config.paypal_client_secret) {
+    throw new ApiError(
+      503,
+      "PayPal is not configured. Set PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET."
     );
+  }
+  const auth = Buffer.from(
+    `${config.paypal_client_id}:${config.paypal_client_secret}`
+  ).toString("base64");
 
-        const data = await response.json();
-        return data.access_token;
-    } catch (error) {
-        console.error("Failed to generate Access Token:", error);
-    }
+  const response = await safeFetch(`${config.paypal_base}/v1/oauth2/token`, {
+    method: "POST",
+    body: "grant_type=client_credentials",
+    headers: {
+      Authorization: `Basic ${auth}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+  });
+
+  const data = await readJson(response);
+  // The original swallowed all errors and returned `undefined` here.
+  if (!response.ok || !data.access_token) {
+    console.error("PayPal token error:", data);
+    throw ApiError.badGateway("PayPal authentication failed");
+  }
+  return data.access_token;
 };
 
-/**
- * Create an order to start the transaction.
- * @see https://developer.paypal.com/docs/api/orders/v2/#orders_create
- */
-const createOrder = async (data) => {
-    const accessToken = await generateAccessToken();
-    const url = `${base}/v2/checkout/orders`;
-    const payload = {
-        intent: "CAPTURE",
-        purchase_units: [
-            {
-                amount: {
-                    currency_code: "USD",
-                    value: data.product.cost,
-                },
-            },
-        ],
-    };
+/** Create an order to start the transaction. */
+const createOrder = async (data = {}) => {
+  const rawAmount = data?.product?.cost ?? data?.amount ?? data?.total ?? data?.totalPrice;
+  if (rawAmount === undefined || rawAmount === null || rawAmount === "") {
+    throw ApiError.badRequest("An order amount (product.cost) is required");
+  }
+  const value = parseAmount(rawAmount, "product.cost");
+  if (value <= 0) throw ApiError.badRequest("Order amount must be greater than zero");
 
-    const response = await fetch(url, {
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-            // Uncomment one of these to force an error for negative testing (in sandbox mode only). Documentation:
-            // https://developer.paypal.com/tools/sandbox/negative-testing/request-headers/
-            // "PayPal-Mock-Response": '{"mock_application_codes": "MISSING_REQUIRED_PARAMETER"}'
-            // "PayPal-Mock-Response": '{"mock_application_codes": "PERMISSION_DENIED"}'
-            // "PayPal-Mock-Response": '{"mock_application_codes": "INTERNAL_SERVER_ERROR"}'
+  const accessToken = await generateAccessToken();
+  const response = await safeFetch(`${config.paypal_base}/v2/checkout/orders`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({
+      intent: "CAPTURE",
+      purchase_units: [
+        {
+          amount: {
+            currency_code: config.paypal_currency,
+            value: value.toFixed(2),
+          },
         },
-        method: "POST",
-        body: JSON.stringify(payload),
-    });
-
-    return handleResponse(response);
+      ],
+    }),
+  });
+  return handleResponse(response);
 };
 
-/**
- * Capture payment for the created order to complete the transaction.
- * @see https://developer.paypal.com/docs/api/orders/v2/#orders_capture
- */
+/** Capture payment for a created order. */
 const captureOrder = async (orderID) => {
-    const accessToken = await generateAccessToken();
-    const url = `${base}/v2/checkout/orders/${orderID}/capture`;
-
-    const response = await fetch(url, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-            // Uncomment one of these to force an error for negative testing (in sandbox mode only). Documentation:
-            // https://developer.paypal.com/tools/sandbox/negative-testing/request-headers/
-            // "PayPal-Mock-Response": '{"mock_application_codes": "INSTRUMENT_DECLINED"}'
-            // "PayPal-Mock-Response": '{"mock_application_codes": "TRANSACTION_REFUSED"}'
-            // "PayPal-Mock-Response": '{"mock_application_codes": "INTERNAL_SERVER_ERROR"}'
-        },
-    });
-
-    return handleResponse(response);
-};
-
-async function handleResponse(response) {
-    try {
-        const jsonResponse = await response.json();
-        return {
-            jsonResponse,
-            httpStatusCode: response.status,
-        };
-    } catch (err) {
-        const errorMessage = await response.text();
-        throw new Error(errorMessage);
+  if (!orderID) throw ApiError.badRequest("An orderID is required");
+  const accessToken = await generateAccessToken();
+  const response = await safeFetch(
+    `${config.paypal_base}/v2/checkout/orders/${encodeURIComponent(orderID)}/capture`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: "{}",
     }
-}
+  );
+  return handleResponse(response);
+};
 
 const payment = {
+  orders: asyncHandler(async (req, res) => {
+    const { jsonResponse, httpStatusCode } = await createOrder(req.body);
+    res.status(httpStatusCode).json(jsonResponse);
+  }),
 
-    orders: asyncHandler(
-        async (req, res) => {
-            try {
-                // use the cart information passed from the front-end to calculate the order amount detals
-                const { jsonResponse, httpStatusCode } = await createOrder(req.body);
-                res.status(httpStatusCode).json(jsonResponse);
-            } catch (error) {
-                console.error("Failed to create order:", error);
-                res.status(500).json({ error: "Failed to create order." });
-            }
-        } 
-    ),
-      
-    orderId: asyncHandler(
-        async (req, res) => {
-            try {
-                const { orderID } = req.params;
-                const { jsonResponse, httpStatusCode } = await captureOrder(orderID);
-                res.status(httpStatusCode).json(jsonResponse);
-            } catch (error) {
-                console.error("Failed to create order:", error);
-                res.status(500).json({ error: "Failed to capture order." });
-            }
-        }
-    )
-}
+  orderId: asyncHandler(async (req, res) => {
+    const { jsonResponse, httpStatusCode } = await captureOrder(req.params.orderID);
+    res.status(httpStatusCode).json(jsonResponse);
+  }),
+};
 
-module.exports = { payment }
+module.exports = { payment };

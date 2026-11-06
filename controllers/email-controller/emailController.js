@@ -1,35 +1,58 @@
-const nodemailer = require('nodemailer');
-const asyncHandler = require('express-async-handler');
+const nodemailer = require("nodemailer");
 
-const { email_address, email_password } = require('../../config/env');
+const config = require("../../config/env");
+const ApiError = require("../../utils/apiError");
+const { isEmail } = require("../../utils/helpers");
 
-const sendEmail = 
-  asyncHandler(
-    async (data, req, res) => {
-        let transporter = nodemailer.createTransport({
-          host: "smtp.gmail.com",
-          port: 587,
-          secure: false, // true for 465, false for other ports
-          auth: {
-            user: email_address, // generated ethereal user
-            pass: email_password, // generated ethereal password
-          },
-        });
-        
-        // send mail with defined transport object
-        let info = await transporter.sendMail({
-          from: '"Express store" <no-reply@gmail.com>', // sender address
-          to: data.to, // list of receivers
-          text: "Hey user",
-          subject: data.subject, // Subject lin
-          html: data.html, // html body
-        });
+const stripHtml = (html = "") => String(html).replace(/<[^>]*>/g, " ").trim();
 
-        console.log("Message sent: %s", info.messageId);
-      // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
-      // Preview only available when sending through an Ethereal account
-      console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+/**
+ * Send a transactional e-mail.
+ *
+ * This is a plain async helper, not an Express handler: the original wrapped
+ * it in express-async-handler and called it with (data), so failures were
+ * silently swallowed by a res object that did not exist.
+ */
+const sendEmail = async (data = {}) => {
+  if (!isEmail(data.to)) {
+    throw ApiError.badRequest("A valid recipient email is required");
+  }
+  if (!data.subject || (!data.html && !data.text)) {
+    throw ApiError.badRequest("An email subject and body are required");
+  }
+
+  if (!config.email_address || !config.email_password) {
+    if (config.isProduction) {
+      throw new ApiError(503, "Email delivery is not configured");
     }
-  )
+    // In development, keep the flow usable without SMTP credentials.
+    console.info(
+      `[email] SMTP not configured - would send "${data.subject}" to ${data.to}`
+    );
+    return { skipped: true };
+  }
 
-module.exports = { sendEmail }
+  const transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
+    auth: { user: config.email_address, pass: config.email_password },
+  });
+
+  try {
+    const info = await transporter.sendMail({
+      from: config.email_from,
+      to: data.to,
+      subject: data.subject,
+      text: data.text || stripHtml(data.html),
+      html: data.html,
+    });
+    console.info(`Message sent: ${info.messageId}`);
+    return info;
+  } catch (error) {
+    console.error("Failed to send email:", error.message);
+    throw ApiError.badGateway("Failed to send email");
+  }
+};
+
+module.exports = { sendEmail };

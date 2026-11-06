@@ -1,181 +1,129 @@
-const asyncHandler = require('express-async-handler');
-const fs = require('fs');
+const asyncHandler = require("express-async-handler");
 
-const Blog = require('../../models/blog-model/blogModel');
-const User = require('../../models/user-model/userModel');
-const { cloudinaryUploads } = require('../../utils/cloudinary');
+const Blog = require("../../models/blog-model/blogModel");
+const { cloudinaryUploadImg } = require("../../utils/cloudinary");
+const ApiError = require("../../utils/apiError");
+const { assertObjectId, pick, requireFields, asId } = require("../../utils/helpers");
+
+const WRITABLE_FIELDS = ["title", "description", "category", "images", "author"];
+
+/** Toggle a user's like/dislike, keeping the legacy boolean flags in sync. */
+const toggleReaction = async (req, res, reaction) => {
+  requireFields(req.body, ["blogId"]);
+  const blogId = assertObjectId(req.body.blogId, "blog id");
+  const blog = await Blog.findById(blogId);
+  if (!blog) throw ApiError.notFound("Blog not found");
+
+  const userId = String(req.user._id);
+  const likes = (blog.likes || []).map(asId);
+  const dislikes = (blog.dislikes || []).map(asId);
+  const target = reaction === "like" ? likes : dislikes;
+  const opposite = reaction === "like" ? dislikes : likes;
+  const alreadyReacted = target.includes(userId);
+
+  const nextTarget = alreadyReacted
+    ? target.filter((id) => id !== userId)
+    : [...target, userId];
+  const nextOpposite = opposite.filter((id) => id !== userId);
+
+  const payload =
+    reaction === "like"
+      ? {
+          likes: nextTarget,
+          dislikes: nextOpposite,
+          isLiked: nextTarget.length > 0,
+          isDisliked: nextOpposite.length > 0,
+        }
+      : {
+          likes: nextOpposite,
+          dislikes: nextTarget,
+          isLiked: nextOpposite.length > 0,
+          isDisliked: nextTarget.length > 0,
+        };
+
+  const updated = await Blog.findByIdAndUpdate(blogId, payload, {
+    new: true,
+    runValidators: true,
+  });
+  res.status(200).json(updated);
+};
 
 const blog = {
-    // Create a blog
-    createBlog: asyncHandler(
-        async (req, res) => {
-            try {
-                const newBlog = await Blog.create(req.body);
-                res.status(200).json({
-                    status: "success",
-                    newBlog
-                });
-            } catch (error) {
-                res.json(500).json({ message: error.message });
-            }
-        }
-    ),
+  createBlog: asyncHandler(async (req, res) => {
+    requireFields(req.body, ["title", "description", "category"]);
+    const newBlog = await Blog.create(pick(req.body, WRITABLE_FIELDS));
+    res.status(201).json({ status: "success", newBlog });
+  }),
 
-    // Update blog
-    updateBlog: asyncHandler(
-        async (req, res) => {
-            const { id } = req.params;
-            try {
-                const updateblog = await Blog.findByIdAndUpdate(id, req.body, { new: true });
-                res.status(200).json(updateblog);
-            } catch (error) {
-                res.json(500).json({ message: error.message });
-            }
-        }
-    ),
+  updateBlog: asyncHandler(async (req, res) => {
+    const id = assertObjectId(req.params.id, "blog id");
+    const payload = pick(req.body, WRITABLE_FIELDS);
+    if (Object.keys(payload).length === 0) {
+      throw ApiError.badRequest("No updatable fields supplied");
+    }
+    const updated = await Blog.findByIdAndUpdate(id, payload, {
+      new: true,
+      runValidators: true,
+    });
+    if (!updated) throw ApiError.notFound("Blog not found");
+    res.status(200).json(updated);
+  }),
 
-    // Fetch a blog
-    getBlog: asyncHandler(
-        async (req, res) => {
-            const { id } = req.params;
-            try {
-                const getblog = await Blog.findById(id).populate("likes").populate("dislikes");
-                const updateViews = await Blog.findByIdAndUpdate(id, {
-                    $inc:  { numViews: 1 }
-                }, { new: true })
-                res.status(200).json(getblog);
-            } catch (error) {
-                res.json(500).json({ message: error.message });           
-            }
-        }
-    ),
-
-    // Fetch all blocks
-    getAllBlogs: asyncHandler(
-        async (req, res) => {
-            try {
-                const getBlogs = await Blog.find();
-                res.status(200).json(getBlogs);
-            } catch (error) {
-                res.json(500).json({ message: error.message });
-            }
-        }
-    ),
-
-    // Delete blog
-    deleteBlog: asyncHandler(
-        async (req, res) => {
-            const { id } = req.params;
-            try {
-                const deleteblog = await Blog.findByIdAndDelete(id);
-                res.status(200).json(deleteblog);
-            } catch (error) {
-                res.json(500).json({ message: error.message });           
-            }
-        }
-    ),
-
-    // Like a blog
-    likeBlog: asyncHandler(
-        async (req, res) => {
-            const { blogId } = req.body;
-            //console.log(blogId)
-            // blog to be liked
-            const blog = await Blog.findById(blogId);
-            // the user
-            const loginUserId = req?.user?._id;
-            // if the user liked the blog
-            const isLiked = blog?.isLiked;
-            // if the user disliked the blog
-            const alreadyDisliked = blog?.dislikes.find(
-                (userId => userId?.toString() === loginUserId?.toString())
-            );
-            if (alreadyDisliked) {
-                const blog = await Blog.findByIdAndUpdate(blogId, {
-                    $pull: { dislikes: loginUserId },
-                    isDisliked: false
-                }, { new: true });
-                res.json(blog);
-            }
-            if (isLiked) {
-                const blog = await Blog.findByIdAndUpdate(blogId, {
-                    $pull: { likes: loginUserId },
-                    isliked: false
-                }, { new: true });
-                res.json(blog);
-            } else {
-                const blog = await Blog.findByIdAndUpdate(blogId, {
-                    $push: { likes: loginUserId },
-                    isliked: true
-                }, { new: true });
-                res.json(blog);
-            }
-        }
-    ),
-
-    // DisLlike a blog
-    dislikeBlog: asyncHandler(
-         async (req, res) => {
-            const { blogId } = req.body;
-            //console.log(blogId)
-            // blog to be liked
-            const blog = await Blog.findById(blogId);
-            // the user
-            const loginUserId = req?.user?._id;
-            // if the user liked the blog
-            const isDisLiked = blog?.isDisliked;
-            // if the user disliked the blog
-            const alreadyLiked = blog?.likes.find(
-                (userId => userId?.toString() === loginUserId?.toString())
-            )
-            if (alreadyLiked) {
-                const blog = await Blog.findByIdAndUpdate(blogId, {
-                    $pull: { likes: loginUserId },
-                    isLiked: false
-                }, { new: true });
-                res.json(blog);
-            }
-            if (isDisLiked) {
-                const blog = await Blog.findByIdAndUpdate(blogId, {
-                    $pull: { dislikes: loginUserId },
-                    isDisliked: false
-                }, { new: true });
-                res.json(blog);
-            } else {
-                const blog = await Blog.findByIdAndUpdate(blogId, {
-                    $push: { dislikes: loginUserId },
-                    isDisliked: true
-                }, { new: true });
-                res.json(blog);
-            }
-        }
-    ),
-
-    // Upload blog Images
-    uploadImages: asyncHandler(
-        async (req, res) => {
-            const { id } = req.params;
-            try {
-                const uploader = (path) => cloudinaryUploads(path, 'images');
-                const urls = [];
-                const files = req.files;
-                for (const file of files) {
-                    const { path } = file
-                    const newPath = await uploader(path)
-                    urls.push(newPath)
-                    fs.unlinkSync(path)
-                }
-                const findBlog = await Blog.findById(id, {
-                    images: urls.map((file) => {
-                        return file
-                    }, { new: true })
-                });
-                res.status(200).json(findBlog);
-            } catch (error) {
-                res.status(500).json({ message: error.message });
-            }
-        }
+  getBlog: asyncHandler(async (req, res) => {
+    const id = assertObjectId(req.params.id, "blog id");
+    // Increment and return the *updated* document in a single atomic op.
+    const updated = await Blog.findByIdAndUpdate(
+      id,
+      { $inc: { numViews: 1 } },
+      { new: true, runValidators: true }
     )
-}
+      .populate("likes")
+      .populate("dislikes");
+    if (!updated) throw ApiError.notFound("Blog not found");
+    res.status(200).json(updated);
+  }),
 
-module.exports = { blog }
+  getAllBlogs: asyncHandler(async (req, res) => {
+    const blogs = await Blog.find().sort("-createdAt");
+    res.status(200).json(blogs);
+  }),
+
+  deleteBlog: asyncHandler(async (req, res) => {
+    const id = assertObjectId(req.params.id, "blog id");
+    const deleted = await Blog.findByIdAndDelete(id);
+    if (!deleted) throw ApiError.notFound("Blog not found");
+    res.status(200).json(deleted);
+  }),
+
+  likeBlog: asyncHandler((req, res) => toggleReaction(req, res, "like")),
+  dislikeBlog: asyncHandler((req, res) => toggleReaction(req, res, "dislike")),
+
+  uploadImages: asyncHandler(async (req, res) => {
+    const id = assertObjectId(req.params.id, "blog id");
+    const found = await Blog.findById(id).select("_id");
+    if (!found) throw ApiError.notFound("Blog not found");
+
+    const urls = [];
+    for (const file of req.files || []) {
+      urls.push(await cloudinaryUploadImg(file.buffer, { folder: "express-store/blogs" }));
+    }
+    if (urls.length === 0) throw ApiError.badRequest("No images were uploaded");
+
+    const updated = await Blog.findByIdAndUpdate(
+      id,
+      { $push: { images: { $each: urls } } },
+      { new: true, runValidators: true }
+    );
+    res.status(200).json(updated);
+  }),
+};
+
+Object.assign(blog, {
+  create: blog.createBlog,
+  getAll: blog.getAllBlogs,
+  getById: blog.getBlog,
+  update: blog.updateBlog,
+  remove: blog.deleteBlog,
+});
+
+module.exports = { blog };

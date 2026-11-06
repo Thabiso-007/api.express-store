@@ -1,2 +1,24 @@
-node_modules
+# Dependencies
+node_modules/
+
+# Environment / secrets
 .env
+.env.*
+!.env.example
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+*.log
+
+# Test / coverage output
+coverage/
+.nyc_output/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Runtime uploads (the API now keeps uploads in memory, but keep local scratch out of git)
+public/images/tmp/

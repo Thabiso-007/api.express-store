@@ -1,10 +1,16 @@
 {
-  "name": "server",
-  "version": "1.0.0",
-  "description": "",
+  "name": "api-express-store",
+  "version": "1.1.0",
+  "description": "REST API for an e-commerce store built with Express and MongoDB",
   "main": "index.js",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "test": "node --test",
+    "audit": "npm audit --omit=dev"
   },
   "repository": {
     "type": "git",
@@ -17,10 +23,8 @@
   },
   "homepage": "https://github.com/Thabiso-007/api.express-store#readme",
   "dependencies": {
-    "bcrypt": "^5.1.0",
-    "body-parser": "^1.20.1",
-    "cloudinary": "^1.33.0",
-    "colors": "^1.4.0",
+    "bcryptjs": "^3.0.2",
+    "cloudinary": "^2.11.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
@@ -31,14 +35,10 @@
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "node-fetch": "^2.6.7",
-    "nodemailer": "^6.9.0",
-    "nodemon": "^2.0.20",
-    "paypal-rest-sdk": "^1.8.1",
-    "sharp": "^0.31.3",
-    "slugify": "^1.6.5",
-    "uniqid": "^5.4.0"
+    "nodemailer": "^10.3.1",
+    "slugify": "^1.6.5"
   },
   "devDependencies": {
-    "env-cmd": "^8.0.2"
+    "supertest": "^7.0.0"
   }
 }
