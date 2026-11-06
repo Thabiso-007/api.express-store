@@ -4,10 +4,13 @@ const express = require("express");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const morgan = require("morgan");
-const mongoose = require("mongoose");
 const path = require("path");
+const swaggerUi = require("swagger-ui-express");
 
 const config = require("./config/env");
+const pkg = require("./package.json");
+const openApiSpec = require("./docs/openapi");
+const healthController = require("./controllers/health-controller/healthController");
 const { errorHandler, notFound } = require("./middleware/errorHandler");
 
 const authRoutes = require("./routes/user-routes/authRoutes");
@@ -37,22 +40,45 @@ if (!config.isTest) app.use(morgan("tiny"));
 
 app.use("/images", express.static(path.join(__dirname, "public", "images")));
 
+// ------------------------------------------------------------ System -----
 app.get("/", (req, res) => {
   res.status(200).json({
-    name: "api.express-store",
+    name: pkg.name,
+    version: pkg.version,
     status: "running",
-    docs: "https://github.com/Thabiso-007/api.express-store#readme",
+    docs: "/api/docs",
+    openapi: "/api/docs.json",
+    health: "/api/health",
+    ready: "/api/health/ready",
+    statusPage: "/status",
+    repository: "https://github.com/Thabiso-007/api.express-store",
   });
 });
 
-app.get("/api/health", (req, res) => {
-  const states = ["disconnected", "connected", "connecting", "disconnecting"];
-  res.status(200).json({
-    status: "ok",
-    uptime: process.uptime(),
-    database: states[mongoose.connection.readyState] || "unknown",
-  });
-});
+app.get("/status", healthController.statusPage);
+app.get("/api/health/live", healthController.live);
+app.get("/api/health/ready", healthController.ready);
+app.get("/api/health", healthController.health);
+
+// ------------------------------------------------------- API docs ---------
+// Raw spec is useful for codegen, Postman/Insomnia imports and monitoring.
+app.get("/api/docs.json", (req, res) => res.json(openApiSpec));
+// swagger-ui-express redirects /api/docs -> /api/docs/ itself; an explicit
+// redirect here would also match the trailing-slash URL (Express' non-strict
+// routing) and create a redirect loop.
+app.use(
+  "/api/docs",
+  swaggerUi.serve,
+  swaggerUi.setup(openApiSpec, {
+    customSiteTitle: "api.express-store | API docs",
+    customCss: ".swagger-ui .topbar { display: none }",
+    swaggerOptions: {
+      persistAuthorization: true,
+      displayRequestDuration: true,
+      filter: true,
+    },
+  })
+);
 
 // Mount the more specific path first: blogRouter.get('/:id') would otherwise
 // swallow `/api/blog/category`.

@@ -23,8 +23,11 @@ npm run dev               # or: npm start
 ```
 
 The server listens on `PORT` (default `5000`) and binds to `0.0.0.0`.
-`GET /` returns a small status payload and `GET /api/health` reports the
-database connection state.
+Once it is running:
+
+- **<http://localhost:5000/api/docs>** — interactive Swagger UI
+- **<http://localhost:5000/status>** — live status page
+- **<http://localhost:5000/api/health/ready>** — readiness probe
 
 ### Scripts
 
@@ -32,7 +35,9 @@ database connection state.
 | --- | --- |
 | `npm start` | Run the server (`node index.js`) |
 | `npm run dev` | Run with auto-reload (`node --watch index.js`) |
-| `npm test` | Run the 46 regression tests (no MongoDB needed) |
+| `npm test` | Run the 59 regression tests (no MongoDB needed) |
+| `npm run health` | Check the readiness endpoint; exits `0` when up, `1` when down |
+| `npm run docs:validate` | Validate `docs/openapi.js` against the official OpenAPI 3 schema |
 | `npm run audit` | Check production dependencies for known vulnerabilities |
 
 ### Environment variables
@@ -47,6 +52,8 @@ if either is missing.
 | `NODE_ENV` | `development` / `production` / `test` |
 | `CLIENT_URL` | Comma-separated allowed CORS origins (empty = reflect origin) |
 | `APP_URL` | Frontend base URL used to build password-reset links |
+| `API_BASE_URL` | Optional absolute URL listed in the OpenAPI `servers` (leave unset to use the current host) |
+| `HEALTHCHECK_URL` | Endpoint used by `npm run health` (default `http://127.0.0.1:PORT/api/health/ready`) |
 | `MONGO_URI` | MongoDB connection string |
 | `JWT_SECRET` | Secret used to sign access and refresh tokens |
 | `JWT_EXPIRES_IN`, `REFRESH_TOKEN_EXPIRES_IN` | Token lifetimes (default `1h` / `1d`) |
@@ -95,9 +102,108 @@ Stack traces are only included outside production.
 
 ---
 
+## API documentation (Swagger / OpenAPI)
+
+The full OpenAPI 3.0 contract lives in [`docs/openapi.js`](./docs/openapi.js) —
+one plain JS object, no build step or YAML parser. Every route, request body,
+response, error, auth scheme and example is described there.
+
+| What | URL |
+| --- | --- |
+| Interactive **Swagger UI** | `GET /api/docs` (redirects to `/api/docs/`) |
+| Raw **OpenAPI JSON** | `GET /api/docs.json` |
+| Human **status page** | `GET /status` |
+
+Swagger UI and all of its CSS/JS assets are served locally by
+`swagger-ui-express` — there is no CDN dependency, so it also works in
+restricted networks and Vercel preview deployments. The spec is generated from
+`docs/openapi.js` at startup, and CI verifies that every `$ref` resolves, every
+operation has responses/tags/unique `operationId`, and every router path is
+documented.
+
+Using it:
+
+1. Open `/api/docs` and click **Authorize**.
+2. Log in with `POST /api/user/login` (or use **Try it out** in the Auth group)
+   and paste the returned `token` into the `bearerAuth` field — **without** the
+   `Bearer` prefix. `persistAuthorization` keeps it across reloads.
+3. Protected operations now send `Authorization: Bearer <token>` automatically.
+   `/refresh` and `/logout` use the `refreshToken` cookie instead.
+
+`GET /api/docs.json` can also be imported into Postman, Insomnia, Hoppscotch or
+used with code generators (e.g. `openapi-generator`). If the API is hosted
+behind a fixed public domain, set `API_BASE_URL=https://api.example.com` to add
+that URL to the spec's `servers` list; leaving it unset makes Swagger UI call
+whichever host is serving the docs (recommended for previews).
+
+---
+
+## Checking whether the backend is up or down
+
+There are three layers, because "the API is reachable" and "the API works" are
+different questions:
+
+| Endpoint | Meaning | Status codes |
+| --- | --- | --- |
+| `GET /api/health/live` | **Liveness** — the Node process is running and accepting requests. | `200` while alive; no response at all if it is down |
+| `GET /api/health` | Combined view — process info plus the current MongoDB connection state. | Always `200` while the process is alive |
+| `GET /api/health/ready` | **Readiness** — MongoDB is connected *and* answers a ping. | `200` ready · `503` database unavailable / ping failed |
+| `GET /status` | HTML dashboard that polls the two probes every 5 seconds. | `200` |
+
+All health responses are JSON, include `name`, `version`, `environment`,
+`uptime`, `timestamp` and a `checks` object, and send
+`Cache-Control: no-store` so monitors never see a cached "up".
+
+**Quick checks**
+
+```bash
+# Is the process up?
+curl -i http://localhost:5000/api/health/live
+
+# Is the whole stack usable? (200 = yes, 503 = database down)
+curl -i http://localhost:5000/api/health/ready
+
+# From this repo, against a deployed host:
+HEALTHCHECK_URL=https://api.example.com/api/health/ready npm run health
+# -> "UP: ... (database: connected)" with exit code 0, or "DOWN: ..." with exit code 1
+```
+
+`npm run health` runs [`scripts/healthcheck.js`](./scripts/healthcheck.js): it
+is suitable for cron jobs, CI smoke tests, `Dockerfile HEALTHCHECK` and
+Kubernetes `readinessProbe` (it has a 5 s timeout, configurable via
+`HEALTHCHECK_TIMEOUT_MS`). Point an uptime monitor (UptimeRobot, Better Stack,
+Render/Vercel checks, …) at `/api/health/ready` if you want to be alerted about
+database outages, or at `/api/health/live` if you only care about process
+crashes.
+
+**Reading the results**
+
+| Symptom | Interpretation |
+| --- | --- |
+| No response / connection refused | Process is down (or the port/host is wrong) |
+| `/live` = 200, `/ready` = 503 | API is up but MongoDB is unreachable — requests that touch the database will fail |
+| Both 200 | Healthy |
+| `/status` shows a green process badge and a red database badge | Same as the line above, visually |
+
+`/` also returns links to the docs, health and readiness endpoints.
+
+---
+
 ## API endpoints
 
 `🔓` public · `🔑` any authenticated user · `🛡️` admin only · `🍪` refresh cookie.
+
+### System, docs & health
+
+| Method | Endpoint | Access | Action |
+| --- | --- | --- | --- |
+| GET | `/` | 🔓 | Service info + links |
+| GET | `/status` | 🔓 | Auto-refreshing HTML status page |
+| GET | `/api/docs`, `/api/docs/` | 🔓 | Swagger UI |
+| GET | `/api/docs.json` | 🔓 | OpenAPI 3 JSON |
+| GET | `/api/health` | 🔓 | Combined health (process + database state) |
+| GET | `/api/health/live` | 🔓 | Liveness probe |
+| GET | `/api/health/ready` | 🔓 | Readiness probe (`503` when DB is down) |
 
 ### Users, auth, cart, wishlist, orders
 
@@ -207,11 +313,14 @@ PayPal base URL to production.
 ### Deployment
 
 `vercel.json` routes every request to `index.js`, which exports the Express
-app and opens one memoised MongoDB connection per warm container. Locally,
-`index.js` starts `app.listen()` only when executed directly.
+app and opens one memoised MongoDB connection per warm container. The same
+rewrite exposes `/api/docs`, `/api/docs.json`, `/status` and the health probes
+on the deployment. Locally, `index.js` starts `app.listen()` only when executed
+directly.
 
 CI (`.github/workflows/ci.yml`) installs with `npm ci`, checks the app loads
-and runs `npm test` on Node 20 and 22.
+and runs `npm test` on Node 20 and 22 — including the OpenAPI consistency and
+health-probe tests.
 
 ---
 
@@ -253,13 +362,19 @@ A non-exhaustive list of the bugs addressed in this update:
 - **Added**: central config with validation, `ApiError` + consistent error
   mapping, request-body whitelisting, safe product query builder, shared CRUD
   controller, new cart/coupon/order endpoints, `/api/health`, CORS config,
-  `.env.example`, `.gitignore`, Vercel rewrites, CI, and a 46-test regression
-  suite that needs no database. `npm audit` reports **0** vulnerabilities
-  across all dependencies.
+  `.env.example`, `.gitignore`, Vercel rewrites, CI, and a regression suite
+  that needs no database. `npm audit` reports **0** vulnerabilities across all
+  dependencies.
+- **Docs & observability**: a complete OpenAPI 3 contract in
+  `docs/openapi.js` served by a locally-hosted Swagger UI and as raw JSON;
+  liveness/readiness probes with a MongoDB ping, a self-refreshing `/status`
+  page, a CLI healthcheck (`npm run health`), and 59 tests (including spec
+  consistency checks).
 
 ## Technologies
 
 [Node.js](https://nodejs.org/) · [Express](https://expressjs.com/) ·
 [MongoDB / Mongoose](https://www.mongodb.com/) · [JWT](https://jwt.io/) ·
 [Cloudinary](https://cloudinary.com/) · [PayPal Orders v2](https://developer.paypal.com/docs/api/orders/v2/) ·
-[Nodemailer](https://nodemailer.com/) · [node:test](https://nodejs.org/api/test.html)
+[Nodemailer](https://nodemailer.com/) · [OpenAPI / Swagger UI](https://swagger.io/specification/) ·
+[node:test](https://nodejs.org/api/test.html)

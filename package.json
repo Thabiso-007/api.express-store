@@ -10,6 +10,8 @@
     "start": "node index.js",
     "dev": "node --watch index.js",
     "test": "node --test",
+    "health": "node scripts/healthcheck.js",
+    "docs:validate": "node scripts/validate-openapi.js",
     "audit": "npm audit --omit=dev"
   },
   "repository": {
@@ -36,9 +38,11 @@
     "multer": "^1.4.5-lts.1",
     "node-fetch": "^2.6.7",
     "nodemailer": "^10.3.1",
-    "slugify": "^1.6.5"
+    "slugify": "^1.6.5",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
+    "@apidevtools/swagger-parser": "^10.1.1",
     "supertest": "^7.0.0"
   }
 }

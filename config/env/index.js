@@ -41,6 +41,16 @@ const config = {
   get app_url() {
     return read("APP_URL", this.client_url || "http://localhost:3000");
   },
+  get api_base_url() {
+    // Optional absolute URL advertised in the OpenAPI `servers` list.
+    return read("API_BASE_URL", "/");
+  },
+  get healthcheck_url() {
+    return read(
+      "HEALTHCHECK_URL",
+      `http://127.0.0.1:${this.server_port}/api/health/ready`
+    );
+  },
   get email_address() {
     return read("EMAIL_ADDRESS");
   },

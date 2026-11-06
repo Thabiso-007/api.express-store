@@ -22,3 +22,20 @@ jobs:
         run: node -e "require('./app'); console.log('app ok')"
       - name: Run tests
         run: npm test
+      - name: Smoke test Swagger docs and liveness
+        env:
+          PORT: 5050
+          MONGO_URI: mongodb://127.0.0.1:27017/ci-smoke
+          JWT_SECRET: ci-secret
+          NODE_ENV: test
+        run: |
+          node index.js &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+          for i in $(seq 1 20); do
+            curl -fsS http://127.0.0.1:5050/api/health/live > /dev/null && break
+            sleep 0.5
+          done
+          curl -fsS http://127.0.0.1:5050/api/health/live | grep -q '"status":"ok"'
+          curl -fsS http://127.0.0.1:5050/api/docs.json | grep -q '"openapi":"3.0.3"'
+          curl -fsS http://127.0.0.1:5050/api/docs/ | grep -q 'swagger-ui'
